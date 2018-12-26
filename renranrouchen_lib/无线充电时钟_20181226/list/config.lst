@@ -1,0 +1,165 @@
+C51 COMPILER V9.52.0.0   CONFIG                                                            07/26/2018 17:42:19 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE CONFIG
+OBJECT MODULE PLACED IN .\Output\config.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE APP\stdriver\config.c LARGE BROWSE INCDIR(.\driver\inc;.\APP\include) DE
+                    -BUG OBJECTEXTEND PRINT(.\list\config.lst) TABS(2) OBJECT(.\Output\config.obj)
+
+line level    source
+
+   1          #include "config.h"
+   2          #include "delay.h"
+   3          #include "usr.h"
+   4          extern UINT8 hour_12_24_flag,hour_pm_flag;
+   5          void gpio_init(void)
+   6          {
+   7   1        GPIO_Init(P12F,OUTPUT|PU_EN);  //FD612引脚配置
+   8   1        GPIO_Init(P13F,OUTPUT|PU_EN);
+   9   1        GPIO_Init(P14F,OUTPUT|PU_EN); //fd616
+  10   1        GPIO_Init(P15F,OUTPUT|PU_EN);
+  11   1        
+  12   1        GPIO_Init(P37F,OUTPUT);//ds1302
+  13   1      //  GPIO_Init(P01F,INPUT);
+  14   1        GPIO_Init(P35F,OUTPUT);
+  15   1        
+  16   1        GPIO_Init(P06F,INPUT|PU_EN);//key
+  17   1        GPIO_Init(P07F,INPUT|PU_EN);
+  18   1        GPIO_Init(P34F,INPUT|PU_EN);
+  19   1        GPIO_Init(P05F,INPUT|PU_EN);
+  20   1        
+  21   1        GPIO_Init(P03F,INPUT|PD_EN);//voice
+  22   1        
+  23   1        GPIO_Init(P04F,INPUT|PU_EN);//vibration_key 低电平有效
+  24   1        
+  25   1        GPIO_Init(P16F,OUTPUT|PU_EN); //buzzer
+  26   1          buzzer = 0;
+  27   1        
+  28   1      }
+  29          
+  30          
+  31          void CfgFsys(void)
+  32          {
+  33   1      
+  34   1      //  BS(CKCON,7); //IRCL使能
+  35   1        BS(CKSEL,7);//RTC时钟源选择
+  36   1      //  Delay_50us(1);
+  37   1      }
+  38          
+  39          
+  40          /***********************************************************************************
+  41          函数名：    RTC_init
+  42          功能说明： 初始化RTC控制寄存器
+  43          输入参数： rtce   RTC功能模块使能控制
+  44                      mse   RTC毫秒中断使能控制
+  45                      hse   RTC半秒中断使能控制
+  46          返回值：  无
+  47          ***********************************************************************************/                                            
+             -            
+  48          void RTC_init(void)
+  49          {    
+  50   1        
+  51   1        BS(RTCON,6); //RTC毫秒中断使能
+  52   1        BS(RTCON,5); //RTC半秒中断使能
+  53   1        BS(RTCON,7); //RTC时钟使能
+C51 COMPILER V9.52.0.0   CONFIG                                                            07/26/2018 17:42:19 PAGE 2   
+
+  54   1        
+  55   1        BS(EXIE,6);
+  56   1        EA=1;
+  57   1      }
+  58          
+  59          void adc_init(void)
+  60          {   
+  61   1        GPIO_Init(P10F,P10_ADC0_SETTING);
+  62   1        ADCON = AST(0) | ADIE(0) | HTME(7) | VSEL(1);
+  63   1        ADCFGL = ACKD(0) | ADCALE(1) ;
+  64   1        ADCFGL = (ADCFGL&0xF0) | ADCHS(1);
+  65   1        ADCON &= ~(1<<5);
+  66   1      //  ADCON |= AST(1); 
+  67   1      //  INT2EN = 1; 
+  68   1      }
+  69          
+  70          
+  71          void DS1302_INIT(void)
+  72          {
+  73   1          UINT8 ds1320_state=0,rom_value;
+  74   1            ds1302_w_on();
+  75   1            ResetDS1302();
+  76   1            WriteByteDS1302(0x90);                          //写涓流充电控制寄存器
+  77   1            WriteByteDS1302(0xab);
+  78   1            ds1302_w_off();
+  79   1          ResetDS1302();              
+  80   1          WriteByteDS1302(rom1_r_addr); //读取时的地址
+  81   1          rom_value=ReadByteDS1302();
+  82   1          if(rom_value!=0xaa)
+  83   1          {
+  84   2            InitDS1302( );
+  85   2            ds1302_w_on();
+  86   2            ResetDS1302();
+  87   2            WriteByteDS1302(rom1_w_addr);                         
+  88   2            WriteByteDS1302(0xaa);  
+  89   2            ds1302_w_off();
+  90   2            
+  91   2          }
+  92   1        
+  93   1      //    unsigned char year,month,mday,week,hour,minute,second ;         
+  94   1          ResetDS1302();              
+  95   1          WriteByteDS1302(hour_r_addr); //读取时的地址
+  96   1          ds1320_state=ReadByteDS1302();
+  97   1          if(ds1320_state&0x80)
+  98   1          {
+  99   2            hour_12_24_flag=1;
+ 100   2          }
+ 101   1          if(hour_12_24_flag==1)
+ 102   1          {
+ 103   2            if(ds1320_state&0x20)
+ 104   2            hour_pm_flag=1;
+ 105   2          }
+ 106   1      
+ 107   1          
+ 108   1      
+ 109   1          
+ 110   1      }
+ 111          void display_init_first(void)
+ 112          {
+ 113   1        UINT8 rom2_value;
+ 114   1          ResetDS1302();              
+ 115   1          WriteByteDS1302(rom2_r_addr); //读取时的地址
+C51 COMPILER V9.52.0.0   CONFIG                                                            07/26/2018 17:42:19 PAGE 3   
+
+ 116   1          rom2_value=ReadByteDS1302();
+ 117   1          if(rom2_value!=0xaa)
+ 118   1          {
+ 119   2            display_init( );      
+ 120   2            ds1302_w_on();
+ 121   2            ResetDS1302();
+ 122   2            WriteByteDS1302(rom2_w_addr);                         
+ 123   2            WriteByteDS1302(0xaa);  
+ 124   2            ds1302_w_off();
+ 125   2            
+ 126   2          } 
+ 127   1      }
+ 128          
+ 129          void Timer0_init(void)
+ 130          {
+ 131   1        TMOD=(TMOD&0xFC)|0x01;
+ 132   1          TH0 =0XFF;
+ 133   1          TL0 =0Xba;
+ 134   1      //  TR0 = 1;
+ 135   1        ET0 = 1;  
+ 136   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    273    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

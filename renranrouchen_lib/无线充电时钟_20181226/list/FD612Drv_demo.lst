@@ -1,0 +1,271 @@
+C51 COMPILER V9.52.0.0   FD612DRV_DEMO                                                     07/26/2018 17:42:19 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE FD612DRV_DEMO
+OBJECT MODULE PLACED IN .\Output\FD612Drv_demo.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE APP\stdriver\FD612Drv_demo.c LARGE BROWSE INCDIR(.\driver\inc;.\APP\incl
+                    -ude) DEBUG OBJECTEXTEND PRINT(.\list\FD612Drv_demo.lst) TABS(2) OBJECT(.\Output\FD612Drv_demo.obj)
+
+line level    source
+
+   1          #include "ca51f3sfr.h"
+   2          #include "FD612Drv_demo.h"
+   3          #include <intrins.h>
+   4          #include "system.h"
+   5          #include "gpiodef_f3.h"
+   6          #include "ca51f3xsfr.h"
+   7           t_fd612_ops fd612_top_ops;
+   8           FD612_Struct_DispBuff FD612_top_DispBuff;
+   9           t_fd612_ops fd612_base_ops;
+  10           FD612_Struct_DispBuff FD612_base_DispBuff;
+  11          
+  12          #if 0
+              void FD612_TOP_SCL_D_OUT()
+              {
+                GPIO_Init(P16F,OUTPUT|PU_EN);
+              }
+              void FD612_TOP_SDA_D_OUT()
+              {
+                GPIO_Init(P17F,OUTPUT|PU_EN);
+              }
+              void FD612_TOP_SDA_D_IN()
+              {
+                GPIO_Init(P17F,INPUT  );
+              }
+              
+              int FD612_TOP_SDA_IN()
+              {
+                return FD612_DIO_A;
+              }
+              
+              void FD612_TOP_SCL_SET()
+              {
+                FD612_CLK_A = 1 ;
+              }
+              
+              void FD612_TOP_SCL_CLR()
+              {
+                FD612_CLK_A = 0 ;
+              }
+              
+              void FD612_TOP_SDA_SET()
+              {
+                FD612_DIO_A = 1;
+              }
+              
+              void FD612_TOP_SDA_CLR()
+              {
+                FD612_DIO_A = 0;
+              }
+              #endif
+  51          void FD612_BASE_SCL_D_OUT()
+  52          {
+  53   1        GPIO_Init(P15F,OUTPUT|PU_EN);
+  54   1      }
+C51 COMPILER V9.52.0.0   FD612DRV_DEMO                                                     07/26/2018 17:42:19 PAGE 2   
+
+  55          void FD612_BASE_SDA_D_OUT()
+  56          {
+  57   1        GPIO_Init(P14F,OUTPUT|PU_EN);
+  58   1      }
+  59          void FD612_BASE_SDA_D_IN()
+  60          {
+  61   1        GPIO_Init(P14F,INPUT);
+  62   1      }
+  63          
+  64          int FD612_BASE_SDA_IN()
+  65          {
+  66   1        return FD612_DIO_B;
+  67   1      }
+  68          
+  69          void FD612_BASE_SCL_SET()
+  70          {
+  71   1        FD612_CLK_B = 1 ;
+  72   1      }
+  73          
+  74          void FD612_BASE_SCL_CLR()
+  75          {
+  76   1        FD612_CLK_B = 0 ;
+  77   1      }
+  78          
+  79          void FD612_BASE_SDA_SET()
+  80          {
+  81   1        FD612_DIO_B = 1 ; 
+  82   1      }
+  83          
+  84          void FD612_BASE_SDA_CLR()
+  85          {
+  86   1        FD612_DIO_B = 0 ; 
+  87   1      }
+  88          
+  89          
+  90          void FD612_app_init()
+  91          {
+  92   1        unsigned char loop;
+  93   1          
+  94   1      //  fd612_top_ops.FD612_SCL_CLR = FD612_TOP_SCL_CLR;
+  95   1      //  fd612_top_ops.FD612_SCL_D_OUT = FD612_TOP_SCL_D_OUT;
+  96   1      //  fd612_top_ops.FD612_SCL_SET = FD612_TOP_SCL_SET;
+  97   1      //  fd612_top_ops.FD612_SDA_CLR = FD612_TOP_SDA_CLR;
+  98   1      //  fd612_top_ops.FD612_SDA_D_IN = FD612_TOP_SDA_D_IN;
+  99   1      //  fd612_top_ops.FD612_SDA_D_OUT =FD612_TOP_SDA_D_OUT;
+ 100   1      //  fd612_top_ops.FD612_SDA_IN = FD612_TOP_SDA_IN;
+ 101   1      //  fd612_top_ops.FD612_SDA_SET = FD612_TOP_SDA_SET;
+ 102   1      
+ 103   1        fd612_base_ops.FD612_SCL_CLR = FD612_BASE_SCL_CLR;
+ 104   1        fd612_base_ops.FD612_SCL_D_OUT = FD612_BASE_SCL_D_OUT;
+ 105   1        fd612_base_ops.FD612_SCL_SET = FD612_BASE_SCL_SET;
+ 106   1        fd612_base_ops.FD612_SDA_CLR = FD612_BASE_SDA_CLR;
+ 107   1        fd612_base_ops.FD612_SDA_D_IN = FD612_BASE_SDA_D_IN;
+ 108   1        fd612_base_ops.FD612_SDA_D_OUT =FD612_BASE_SDA_D_OUT;
+ 109   1        fd612_base_ops.FD612_SDA_IN = FD612_BASE_SDA_IN;
+ 110   1        fd612_base_ops.FD612_SDA_SET = FD612_BASE_SDA_SET;
+ 111   1      
+ 112   1        FD612_Init(&fd612_base_ops,&FD612_base_DispBuff);
+ 113   1      //  FD612_Init(&fd612_top_ops,&FD612_top_DispBuff);
+ 114   1      #if 0 
+                for(loop = 0;loop < 12;loop++){
+                  FD612_top_DispBuff.DispData[loop] = 0xff;
+C51 COMPILER V9.52.0.0   FD612DRV_DEMO                                                     07/26/2018 17:42:19 PAGE 3   
+
+                }
+              #endif  
+ 119   1      //  FD612_Top_Refresh(&FD612_top_DispBuff,&fd612_top_ops);
+ 120   1      #if 1
+ 121   1      
+ 122   1        for(loop = 0;loop < 12;loop++){
+ 123   2          FD612_base_DispBuff.DispData[loop] = 0X00;
+ 124   2        }
+ 125   1      #endif  
+ 126   1      //  FD612_Top_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+ 127   1        FD612_Base_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+ 128   1        
+ 129   1      //            FD612_base_DispBuff.DispState=FD612_DISP_ON|FD612_INTENS5;
+ 130   1      //          FD612_Command(&fd612_base_ops,FD612_base_DispBuff.DispState);
+ 131   1      }
+ 132          
+ 133          #if 0
+              void FD612_TEST(void)
+              {
+              //    FD612_base_DispBuff.DispData[FD612_DIG5_ADDR]=FD612_DISP_5; 
+              //    FD612_base_DispBuff.DispData[FD612_DIG6_ADDR]=FD612_DISP_6;
+              //    FD612_base_DispBuff.DispData[FD612_DIG7_ADDR]=FD612_DISP_7; 
+              //    FD612_base_DispBuff.DispData[FD612_DIG8_ADDR]=FD612_DISP_8; 
+              //    FD612_Base_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+              //    FD612_PotiveTNage(FD612_DIG1_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG2_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG3_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG4_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG5_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG6_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG7_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG8_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG9_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG10_ADDR,0xff, &FD612_base_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG11_ADDR,0xff, &FD612_base_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG12_ADDR,0xff, &FD612_base_DispBuff);   
+              //    FD612_Base_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+              //    FD612_PotiveTNage(FD612_DIG1_ADDR,FD612_DISP_1, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG2_ADDR,FD612_DISP_2, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG3_ADDR,FD612_DISP_3, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG4_ADDR,FD612_DISP_4, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG5_ADDR,FD612_DISP_5, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG6_ADDR,FD612_DISP_6, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG7_ADDR,FD612_DISP_7, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG8_ADDR,FD612_DISP_8, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG9_ADDR,FD612_DISP_0, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG10_ADDR,FD612_DISP_1, &FD612_top_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG11_ADDR,FD612_DISP_2, &FD612_top_DispBuff);  
+                  //FD612_PotiveTNage(FD612_DIG12_ADDR,FD612_DISP_3, &FD612_base_DispBuff); 
+              
+              //  FD612_base_DispBuff.DispData[FD612_DIG1_ADDR]|=0Xff;
+              //  FD612_base_DispBuff.DispData[FD612_DIG6_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG7_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG8_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG9_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG10_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG11_ADDR]|=0X01;
+              //  FD612_base_DispBuff.DispData[FD612_DIG12_ADDR]|=0X01;
+              //    FD612_base_DispBuff.DispData[FD612_DIG5_ADDR]|=0X01;
+              //    FD612_Base_Refresh(&FD612_top_DispBuff,&fd612_top_ops);
+              
+              //    FD612_PotiveTNage(FD612_DIG1_ADDR,0xff, &FD612_base_DispBuff);
+C51 COMPILER V9.52.0.0   FD612DRV_DEMO                                                     07/26/2018 17:42:19 PAGE 4   
+
+              //    FD612_PotiveTNage(FD612_DIG2_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG3_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG4_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG5_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG6_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG7_ADDR,0xff, &FD612_base_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG8_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG9_ADDR,0xff, &FD612_base_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG10_ADDR,0xff, &FD612_base_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG11_ADDR,0xff, &FD612_base_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG12_ADDR,0xff, &FD612_base_DispBuff);   
+              //    FD612_Base_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+              //    
+              //    
+              //    FD612_PotiveTNage(FD612_DIG1_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG2_ADDR,0xff, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG3_ADDR,0xff, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG4_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG5_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG6_ADDR,0xff, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG7_ADDR,0xff, &FD612_top_DispBuff); 
+              //    FD612_PotiveTNage(FD612_DIG8_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG9_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_PotiveTNage(FD612_DIG10_ADDR,0xff, &FD612_top_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG11_ADDR,0xff, &FD612_top_DispBuff);  
+              //    FD612_PotiveTNage(FD612_DIG12_ADDR,0xff, &FD612_top_DispBuff);
+              //    FD612_top_DispBuff.DispData[FD612_DIG1_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG2_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG3_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG4_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG9_ADDR]|=0X10;
+              //    FD612_top_DispBuff.DispData[FD612_DIG10_ADDR]|=0X10;
+              //    FD612_top_DispBuff.DispData[FD612_DIG11_ADDR]|=0X10;
+              //    FD612_top_DispBuff.DispData[FD612_DIG12_ADDR]|=0X10;
+              ////    FD612_top_DispBuff.DispData[FD612_DIG5_ADDR]=0Xff;
+              
+              
+              //    FD612_top_DispBuff.DispData[FD612_DIG5_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG6_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG7_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG8_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG9_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG10_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG11_ADDR]|=0X01;
+              //    FD612_top_DispBuff.DispData[FD612_DIG12_ADDR]|=0X01;
+              //    FD612_Base_Refresh(&FD612_top_DispBuff,&fd612_top_ops);
+                FD612_PotiveTNage(FD612_DIG1_ADDR,FD612_DISP_1, &FD612_base_DispBuff);
+                FD612_PotiveTNage(FD612_DIG2_ADDR,FD612_DISP_2, &FD612_base_DispBuff);  
+                FD612_PotiveTNage(FD612_DIG3_ADDR,FD612_DISP_3, &FD612_base_DispBuff);  
+                FD612_PotiveTNage(FD612_DIG4_ADDR,FD612_DISP_4, &FD612_base_DispBuff);
+                FD612_PotiveTNage(FD612_DIG5_ADDR,FD612_DISP_5, &FD612_base_DispBuff);
+                FD612_PotiveTNage(FD612_DIG6_ADDR,FD612_DISP_6, &FD612_base_DispBuff);  
+                FD612_PotiveTNage(FD612_DIG7_ADDR,FD612_DISP_7, &FD612_base_DispBuff);  
+                FD612_PotiveTNage(FD612_DIG8_ADDR,FD612_DISP_8, &FD612_base_DispBuff);
+                FD612_PotiveTNage(FD612_DIG9_ADDR,FD612_DISP_9, &FD612_base_DispBuff);
+                FD612_PotiveTNage(FD612_DIG10_ADDR,FD612_DISP_A, &FD612_base_DispBuff); 
+                FD612_PotiveTNage(FD612_DIG11_ADDR,FD612_DISP_C, &FD612_base_DispBuff); 
+              //  FD612_PotiveTNage(FD612_DIG12_ADDR,FD612_DISP_4, &FD612_base_DispBuff);
+                FD612_Base_Refresh(&FD612_base_DispBuff,&fd612_base_ops);
+              }
+              #endif
+
+C51 COMPILER V9.52.0.0   FD612DRV_DEMO                                                     07/26/2018 17:42:19 PAGE 5   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    217    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     76    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
