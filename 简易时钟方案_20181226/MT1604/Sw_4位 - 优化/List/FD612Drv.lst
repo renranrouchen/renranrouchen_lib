@@ -1,0 +1,646 @@
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE FD612DRV
+OBJECT MODULE PLACED IN .\Output\FD612Drv.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE App\FD612Drv.C LARGE BROWSE INCDIR(.\StdDriver\inc;.\App) DEBUG OBJECTEX
+                    -TEND PRINT(.\List\FD612Drv.lst) TABS(2) OBJECT(.\Output\FD612Drv.obj)
+
+line level    source
+
+   1          /** 
+   2          * @file       FD612Drv.C    数码管显示驱动芯片 客户代码
+   3          * @brief       FD612 的驱动
+   4          * @author      ywaby
+   5          * @version     1B3 
+   6          * @date       2014-03-31    
+   7          * @note
+   8          * @details  
+   9          * @copyright Copyright (c) 2013 by FUZHOU FUDA HISI MICROELECTRONICS CO.,LTD.              
+  10          */
+  11          #define FD612DRV_GROBLE
+  12          
+  13          #include "FD612Drv.H"
+  14          #include <stdio.h>
+  15          #include <intrins.h>
+  16          #include "DEBUG.H"
+  17          #include "usr.h"
+  18          
+  19          extern const unsigned char  dis[10] ;
+  20          static void FD628_Delay10us()
+  21          {
+  22   1        unsigned char i;
+  23   1      
+  24   1        _nop_();
+  25   1        i = 25;
+  26   1        while (--i);
+  27   1      }
+  28          
+  29          /** @addtogroup FD612_DRIVER FD612 驱动
+  30            @{
+  31          */
+  32          #define   FD612_DELAY_LOW         FD612_DELAY_1US         ///<时钟低电平延时                        
+  33          #define   FD612_DELAY_HIGH        FD612_DELAY_1US         ///<时钟高电平延时                                              
+  34          #define   FD612_DELAY_WAIT        FD612_DELAY_1US         ///<数据读取等待时间
+  35          #define   FD612_DELAY_SU_STA      FD612_DELAY_1US         ///<起始信号建立时间 
+  36          #define   FD612_DELAY_HD_STA      FD612_DELAY_1US         ///<起始信号保持时间           
+  37          #define   FD612_DELAY_SU_STO      FD612_DELAY_1US         ///<停止信号建立时间  
+  38           /** 
+  39           * @brief 数码管码值编码数组,依次对应的显示：0,1,2,3,4,5,6,7,8,9,A,b,C,d,E,F      
+  40           */
+  41          CONST INT8U DISP_TAB[0X10]={0x3f,0x06,0x5B,0x4F,0x66,0x6D,0x7d,0x07,0x7F,0x6F,0x77,0x7c,0x39,0x5e,0x79,0x7
+             -1};
+  42          /** @addtogroup  FD612_FUNCTION  函数
+  43            @{
+  44          */
+  45          /** @addtogroup  FD612_COMMUNICATION  通信时序
+  46            @{
+  47          */
+  48          /**
+  49           *  @brief  启动FD612通信
+  50           *  @param  void
+  51           *  @return void
+  52           *  @note   在SCL高电平期间捕获到SDA的下降沿，FD612开始通信   
+  53           */
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 2   
+
+  54          static void FD612_Start( void )      
+  55          {
+  56   1        FD612_SDA_SET;           
+  57   1        FD612_SCL_SET;
+  58   1        FD612_SDA_D_OUT;         //设置SDA为输出方向 
+  59   1        FD612_SCL_D_OUT;         //设置SCL为输出方向  
+  60   1        FD612_DELAY_SU_STA;
+  61   1        FD612_SDA_CLR;           //发送起始信号
+  62   1        FD612_DELAY_HD_STA;      
+  63   1        FD612_SCL_CLR;           
+  64   1        FD612_DELAY_LOW;
+  65   1      }   
+  66          
+  67          /**
+  68           *  @brief  停止FD612通信
+  69           *  @param  void
+  70           *  @return void
+  71           *  @note   在SCL高电平期间捕获到SDA的上升沿，FD612停止通信  
+  72           */
+  73           static void FD612_Stop( void )
+  74          {  
+  75   1        FD612_SCL_SET;            /* 设置SCL为高电平 */ 
+  76   1        FD612_SDA_CLR;            /* 设置SDA为低电平 */
+  77   1        FD612_SDA_D_OUT;          /* 设置SDA为输出方向 */
+  78   1        FD612_DELAY_SU_STO;         /* 停止信号建立时间: */
+  79   1        FD612_SDA_SET;            /* 设置SDA为高电平 */
+  80   1        FD612_SDA_D_IN;           /* 设置SDA为输入方向 */
+  81   1      }
+  82          /**
+  83           *  @brief  发送一个字节数据给FD612,并读取应答位
+  84           *  @param  dat 发送的一字节数据
+  85           *  @retval  BOOLEAN  
+  86           *  @return 读取的ACK应答位
+  87           *  @note   数据传输低位在前，高位在后
+  88           */
+  89          
+  90           BOOLEAN FD612_WrByte( INT8U dat )
+  91          {
+  92   1        INT8U i;                /* 移位写出的位数寄存器 */
+  93   1        BOOLEAN ACKTemp=0;
+  94   1        FD612_SDA_D_OUT;            /* 设置SDA为输出方向 */
+  95   1        for( i = 0; i != 8; i++ )     /* 输出8 bit的数据 */        
+  96   1        {      
+  97   2          if( dat & 0x80 ) 
+  98   2          {
+  99   3              FD612_SDA_SET;        /* 设置SDA为高电平 */
+ 100   3          }
+ 101   2          else 
+ 102   2          {
+ 103   3              FD612_SDA_CLR;      /* 设置SDA为低电平 */
+ 104   3          }
+ 105   2        FD612_SCL_SET;        /* 设置SCL为高电平 */
+ 106   2        dat <<= 1;          /* 输出数据右移一位，数据从高到低的输出 */
+ 107   2        FD612_DELAY_HIGH;           /* SCL时钟高电平时间：*/
+ 108   2        FD612_SCL_CLR;        /* 设置SCL为低电平 */
+ 109   2        FD612_DELAY_LOW;  
+ 110   2        } 
+ 111   1        //////读取ACK位/////
+ 112   1        FD612_SDA_SET;               /* 设置SDA为高电平 */      
+ 113   1        FD612_SDA_D_IN;           /* 设置SDA为输入方向 */ 
+ 114   1        FD612_SCL_SET;            /* SCL时钟的高电平时间：*/
+ 115   1        if(FD612_SDA_IN==0) ACKTemp=0; /* 读入1 bit值 */
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 3   
+
+ 116   1        else ACKTemp=1; 
+ 117   1        FD612_DELAY_HIGH;                 /* SCL时钟高电平时间*/
+ 118   1        FD612_SCL_CLR;              /* SCL时钟的低电平*/
+ 119   1        FD612_DELAY_LOW;  
+ 120   1        return  ACKTemp ;  
+ 121   1      } 
+ 122          
+ 123          /**
+ 124           *  @brief  从FD612读取一个字节数据
+ 125           *  @param  MSACK 发送的ACK值 发送不应答位 ACK=1；发送应答位 ACK=0
+ 126           *  @retval  INT8U  
+ 127           *  @return 读取的一字节数据
+ 128           *  @note   数据传输高位在前，低位在后
+ 129           */
+ 130          #if 0
+              static INT8U  FD612_RdByte( BOOLEAN MSACK )
+              {
+                INT8U i;                
+                INT8U dat=0;                   /* 移位读入的位数寄存器i */
+                FD612_SDA_SET;                 /* 设置SDA为高电平 */
+                FD612_SDA_D_IN;                /* 设置SDA为输入方向 */
+                for( i = 0; i != 8; i++ )    /* 读入8 bit的数据 */ 
+                {                
+                  FD612_SCL_SET;             /* 设置SCL为高电平 */
+                  FD612_DELAY_HIGH;            /* SCL时钟高电平时间：*/
+                  dat <<= 1;                  /* 读入数据右移一位，数据从高到低的读入 */
+                  if( FD612_SDA_IN ) dat++;    /* 读入1 bit值 */
+                  FD612_SCL_CLR;                /* 设置SCL为低电平 */
+                  FD612_DELAY_LOW;      
+                }
+                 //////发送ACK位///// 
+                if(MSACK==0)             /* 发送ACK应答位*/
+                  FD612_SDA_CLR;
+                else FD612_SDA_SET; 
+                FD612_SDA_D_OUT;             /* 设置SDA为输出方向 */
+                FD612_SCL_SET;         /* 设置SCL为高电平 */
+                FD612_DELAY_HIGH;      /* SCL 时钟高电平时间：*/
+                FD612_SCL_CLR;         /* 设置SCL为低电平 */
+                FD612_DELAY_LOW;         
+                return dat;                    /* 返回接收到的数据 */
+              }
+              #endif
+ 158          /**
+ 159           * @ingroup FD612_Api
+ 160           * @brief   读取FD612的按键码字 
+ 161           * @param   无
+ 162           * @return  keytemp 读到按键按下状态的键值 ，无符号8位1字节数，读到无效按键值返回0
+ 163           * @note  读取FD612的按键码字 ，有键按下返回键值，无键按下返回0。按键码值表见下表
+ 164           * @code 
+ 165           *  按键码值表
+ 166            编址    RL1 RL0
+ 167            SEG0/K1 45H 44H
+ 168            SEG1/K2 4DH 4CH
+ 169            SEG2/K3 55H 54H
+ 170            SEG3/K4 5DH 5CH
+ 171            SEG4/K5 65H 64H
+ 172            SEG5/K6 6DH 6CH
+ 173            SEG6/K7 75H 74H
+ 174           *  keycode=FD612_ReadKey();
+ 175           *  Key_Fun ( Keycode) ;     // 按键处理函数 
+ 176           * @endcode 
+ 177           */ 
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 4   
+
+ 178           #if 0
+              unsigned long  FD612_ReadKey()        
+              { 
+                unsigned long  keytemp=0;
+                FD612_Start();
+                FD612_WrByte( READ_KEY );
+                
+                keytemp|=FD612_ReadByte();
+                keytemp<<=8;
+                keytemp|=FD612_ReadByte();  
+                keytemp<<=8;
+                keytemp|=FD612_ReadByte();    
+                keytemp<<=8;
+                keytemp|=FD612_ReadByte();    
+                FD612_Stop();
+              
+                /*
+              #if UART_DEBUG_EN >0 
+                    printf("Keyini is 0x%08lx\n",keycode)  ;    //  加入串口显示按键初值
+                    #endif
+               */
+                return keytemp; 
+              }
+              #endif
+ 202          #if 0
+              #define Key_Table_Num   8 * 4
+              code Key_Code_T Key_Code_Table[Key_Table_Num] = {
+              {1,0x00000001},{2,0x00000010},{3,0x00000100},{4,0x00001000},{5,0x00010000},{6,0x00100000},{7,0x01000000},{
+             -8,0x10000000},
+              {9,0x00000002},{10,0x00000020},{11,0x00000200},{12,0x00002000},{13,0x00020000},{14,0x00200000},{15,0x02000
+             -000},{16,0x20000000},
+              {17,0x00000004},{18,0x00000040},{19,0x00000400},{20,0x00004000},{21,0x00040000},{22,0x00400000},{23,0x0400
+             -0000},{24,0x40000000},
+              {25,0x00000008},{26,0x00000080},{27,0x00000800},{28,0x00008000},{29,0x00080000},{30,0x00800000},{31,0x0800
+             -0000},{32,0x80000000},
+              };
+              
+              
+              unsigned char Get_KeyCode(unsigned long dat)
+              {
+                unsigned int i;
+                printf("Keyini is 0x%08lx\n",dat)  ; 
+                for(i = 0;i < Key_Table_Num ;i++)
+                {
+                if(Key_Code_Table[i].Key_Code == dat)
+                {
+                  
+                printf("Keyini is %d\n",Key_Code_Table[i].Key_Num)  ; 
+                return Key_Code_Table[i].Key_Num;
+                }
+                }
+                
+                return 0;
+              }
+              #endif
+ 229          #if 0
+              static unsigned char FD612_ReadByte()         
+              {
+                unsigned char dat,i;
+                FD612_SDA_SET;
+                FD612_SDA_D_IN;
+                dat = 0;
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 5   
+
+                for( i = 0; i != 8; i++ )
+                {
+                  FD612_DELAY_HIGH;   // 可选延时
+                  FD612_SCL_SET;
+                  FD612_DELAY_HIGH;  // 可选延时
+                  dat <<= 1;
+                  if( FD612_SDA_IN ) dat++;
+                  FD612_SCL_CLR;
+                }
+                FD612_SDA_D_OUT;
+                FD612_SDA_CLR;
+                FD612_DELAY_HIGH;
+                FD612_SCL_SET;
+                FD612_DELAY_HIGH;
+                FD612_SCL_CLR;
+                return dat;
+              }
+              #endif
+ 254          
+ 255          /* @} FD612_COMMUNICATION */
+ 256          /** @addtogroup  FD612_API_FUNTION  应用函数
+ 257            @{
+ 258          */
+ 259          /**
+ 260           *  @brief  向FD612发送一字节的命令
+ 261           *  @param  CMD 发送一字节的命令
+ 262           *  @return void
+ 263           *  @note   CMD是控制命令中的宏
+ 264           *  @par Example 
+ 265           *  @code
+ 266           *  FD612_Command(FD612_7SEG_CMD);
+ 267           *  @endcode 
+ 268           */
+ 269          void FD612_Command( INT8U CMD )         
+ 270          {                 
+ 271   1        FD612_Start();
+ 272   1        FD612_WrByte(CMD);
+ 273   1        FD612_Stop(); 
+ 274   1      }
+ 275           /**
+ 276           *  @brief  刷新FD612的显示数据
+ 277           *  @param  void
+ 278           *  @return void
+ 279           *  @note   使用该函数需要打开 FD612_DISP_BUFF_EN
+ 280           */
+ 281          void FD612_DispDataRefresh(void)
+ 282          {
+ 283   1        INT8U i;
+ 284   1        FD612_Command(FD612_ADDR_INC_DIGWR_CMD);  
+ 285   1        FD612_Start();    
+ 286   1        FD612_WrByte(FD612_DIGADDR_WRCMD|FD612_DISP_MIN_ADDR) ;
+ 287   1        for(i=FD612_DISP_MIN_ADDR;i<=FD612_DISP_MAX_ADDR;i++)
+ 288   1          FD612_WrByte(FD612_DispBuff.DispData[i]) ;
+ 289   1        FD612_Stop();
+ 290   1      }
+ 291           /**
+ 292           *  @brief  刷新FD612的相关数据
+ 293           *  @param  void
+ 294           *  @return void
+ 295           *  @note    
+ 296           *  @note   使用该函数需要打开 FD612_DISP_BUFF_EN 
+ 297           */
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 6   
+
+ 298          void FD612_Refresh(void)
+ 299          {
+ 300   1        FD612_Command(FD612_DispBuff.DispSEG_MODE);
+ 301   1        FD612_DispDataRefresh();
+ 302   1        FD612_Command(FD612_DispBuff.DispState);
+ 303   1      }
+ 304          /* @} FD612_API_FUNTION */
+ 305          #if FD612_DECODE_TAB_EN!=0
+              
+              #define FD612_DECODE_TAB_NUM 14*4 ///<FD612_DecodeTab[]的字符个数
+              typedef struct 
+              {
+                INT8U Character; ///<字符
+                INT8U Bitmap;     ///<字符对应的码值
+              } Struct_LED_Bitmap; ///<数码管的码值和字符的对应结构体，用于查表
+              ///<数码管的码值和字符的对应表格，用于查表
+              CONST Struct_LED_Bitmap FD612_DecodeTab[FD612_DECODE_TAB_NUM] = {
+                {'0', 0x3F}, {'1', 0x06}, {'2', 0x5B}, {'3', 0x4F},
+                {'4', 0x66}, {'5', 0x6D}, {'6', 0x7D}, {'7', 0x07},
+                {'8', 0x7F}, {'9', 0x6F}, {'a', 0x77}, {'A', 0x77},
+                {'b', 0x7C}, {'B', 0x7C}, {'c', 0x39}, {'C', 0x39},
+                {'d', 0x5E}, {'D', 0x5E}, {'e', 0x79}, {'E', 0X7b},
+                {'f', 0x71}, {'F', 0x71}, {'g', 0x6F}, {'G', 0x3D},
+                {'h', 0x74}, {'H', 0x76}, {'i', 0x04}, {'I', 0x06},
+                {'j', 0x1E}, {'J', 0x1E}, {'l', 0x38}, {'L', 0x38},
+                {'n', 0x54}, {'N', 0x37}, {'o', 0x5C}, {'O', 0x3F},
+                {'p', 0x73}, {'P', 0x73}, {'q', 0x67}, {'Q', 0x67},
+                {'r', 0x50}, {'R', 0x77}, {'s', 0x6D}, {'S', 0x6D},
+                {'t', 0x78}, {'T', 0x31}, {'u', 0x3E}, {'U', 0x3E},
+                {'y', 0x6E}, {'Y', 0x6E}, {'z', 0x5B}, {'Z', 0x5B},
+                {':', 0xfe}, {'-', 0x40}, {'_', 0x08}, {' ', 0x00}
+              };
+              
+              /**
+               *  @brief  数码管的查表函数
+               *  @param  cTemp 查找的字符
+               *  @retval INT8U  
+               *  @return 字符对应的数码管码值
+               *  @note   使用该函数需要打开 FD612_DECODE_TAB_EN 
+               *  @par Example
+               *  @code
+               *  char CTmp;
+               *  CTmp=DispGetCode('S');
+               *  @endcode 
+               */ 
+               
+              INT8U DispGetCode(char cTemp)
+              {
+                INT8U i, Bitmap=0x00;
+                for(i=0; i<FD612_DECODE_TAB_NUM; i++)
+                {
+                  if(FD612_DecodeTab[i].Character == cTemp)
+                  {
+                    Bitmap = FD612_DecodeTab[i].Bitmap;
+                    break;
+                  }
+                }
+                return Bitmap;
+              }
+              #endif
+ 358          #if FD628_NEGA_DISP==0
+ 359          typedef struct 
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 7   
+
+ 360          {
+ 361            INT8U NegaAddr; ///<对应的共阴数码管数据地址
+ 362            INT8U BitAddr;     ///<对应段地址
+ 363          } Struct_PotiveTNage_Bitmap; ///<数码管的码值和字符的对应结构体，用于查表
+ 364          ///<共阳对应共阴的表格，用于查表,根据具体的应用电路进行修改
+ 365          CONST Struct_PotiveTNage_Bitmap FD612_PotiveTNage_Bitmap[12][8] = {
+ 366              { {0x04,0x01},{0x05,0x01},{0x06,0x01},{0x07,0x01},  {0x08,0x01},{0x09,0x01},{0x0a,0x01},{0x0b,0x01}}, 
+             -   //位4到11     
+ 367              { {0x04,0x02},{0x05,0x02},{0x06,0x02},{0x07,0x02},  {0x08,0x02},{0x09,0x02},{0x0a,0x02},{0x0b,0x02}}, 
+             -   //  
+ 368              { {0x04,0x04},{0x05,0x04},{0x06,0x04},{0x07,0x04},  {0x08,0x04},{0x09,0x04},{0x0a,0x04},{0x0b,0x04}}, 
+ 369              { {0x04,0x08},{0x05,0x08},{0x06,0x08},{0x07,0x08},  {0x08,0x08},{0x09,0x08},{0x0a,0x08},{0x0b,0x08}},
+ 370          
+ 371              { {0x00,0x01},{0x01,0x01},{0x02,0x01},{0x03,0x01},  {0x08,0x10},{0x09,0x10},{0x0a,0x10},{0x0b,0x10}}, 
+             -  //位0到3  8到11
+ 372              { {0x00,0x02},{0x01,0x02},{0x02,0x02},{0x03,0x02},  {0x08,0x20},{0x09,0x20},{0x0a,0x20},{0x0b,0x20}},
+ 373              { {0x00,0x04},{0x01,0x04},{0x02,0x04},{0x03,0x04},  {0x08,0x40},{0x09,0x40},{0x0a,0x40},{0x0b,0x40}},
+ 374              { {0x00,0x08},{0x01,0x08},{0x02,0x08},{0x03,0x08},  {0x08,0x80},{0x09,0x80},{0x0a,0x80},{0x0b,0x80}},
+ 375          
+ 376              { {0x00,0x10},{0x01,0x10},{0x02,0x10},{0x03,0x10},  {0x04,0x10},{0x05,0x10},{0x06,0x10},{0x07,0x10}}, 
+             -  //位0到7
+ 377              { {0x00,0x20},{0x01,0x20},{0x02,0x20},{0x03,0x20},  {0x04,0x20},{0x05,0x20},{0x06,0x20},{0x07,0x20}},
+ 378              { {0x00,0x40},{0x01,0x40},{0x02,0x40},{0x03,0x40},  {0x04,0x40},{0x05,0x40},{0x06,0x40},{0x07,0x40}},
+ 379              { {0x00,0x80},{0x01,0x80},{0x02,0x80},{0x03,0x80},  {0x04,0x80},{0x05,0x80},{0x06,0x80},{0x07,0x80}}
+ 380          };
+ 381          
+ 382           /** @addtogroup FD612_API_FUNTION 
+ 383            @{
+ 384          */
+ 385          
+ 386          /** @addtogroup FD612_PT_API 共阳数码管应用函数
+ 387            @{
+ 388          */
+ 389            /**
+ 390           *  @brief  共阳数码管的某一位写入显示数据
+ 391           *  @param  Addr 共阳数码管的位
+ 392           *  @param  Dat   显示的数据
+ 393           *  @retval void  
+ 394           *  @return 
+ 395           *  @note   使用该函数需要打开 FD612_DECODE_TAB_EN FD612_DISP_BUFF_EN FD628_NEGA_DISP
+ 396           *  @par Example
+ 397           *  @code
+ 398           *  PotiveTNage(1,0X3F); //第一位数码管显示‘0’
+ 399           *  @endcode 
+ 400           */ 
+ 401          void FD612_PotiveTNage(INT8U Addr,INT8U Dat){
+ 402   1        INT8U i,j;
+ 403   1        for(i=0;i<8;i++){
+ 404   2          if(Dat&(0x01<<i))
+ 405   2          {
+ 406   3            j=FD612_PotiveTNage_Bitmap[Addr][i].NegaAddr;
+ 407   3            FD612_DispBuff.DispData[FD612_PotiveTNage_Bitmap[Addr][i].NegaAddr]|=FD612_PotiveTNage_Bitmap[Addr][
+             -i].BitAddr;
+ 408   3          }
+ 409   2          else
+ 410   2            FD612_DispBuff.DispData[FD612_PotiveTNage_Bitmap[Addr][i].NegaAddr]&=(~FD612_PotiveTNage_Bitmap[Addr
+             -][i].BitAddr);   
+ 411   2        }
+ 412   1      }
+ 413            /**
+ 414           *  @brief FD612 某个显示地址开始显示相应的字符串
+ 415           *  @param  Addr 字符串显示的起始地址
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 8   
+
+ 416           *  @param  PStr 指向相应的字符串
+ 417           *  @retval INT8U  
+ 418           *  @return 返回函数执行结果,0为执行成功，1为起始地址超出最大地址
+ 419           *  @note   使用该函数需要打开 FD612_DECODE_TAB_EN 
+ 420           *  @par Example
+ 421           *  @code
+ 422           *  FD612_DispString(FD612_DIG3_ADDR,"FD612");
+ 423           *  @endcode 
+ 424           */ 
+ 425          #if FD612_DECODE_TAB_EN!=0
+              INT8U FD612_DispString( INT8U Addr,char *PStr)
+              {
+                INT8U i;
+                if (Addr>FD612_DISP_MAX_ADDR)return 1;
+                for(i=0;i+Addr<=FD612_DISP_MAX_ADDR;i++)
+                {
+                  if(PStr[i]=='\0')break;//判断是否到达字符串的尾部
+                  FD612_PotiveTNage(i+Addr,DispGetCode(PStr[i]));
+                } 
+                FD612_Refresh();
+                return 0;
+              }
+              #endif
+ 439          #else
+              /* @} FD612_PT_API */
+              /** @addtogroup FD612_NG_API 共阴数码管应用函数
+                @{
+              */
+              /**
+               *  @brief  向共阴数码管某个显示地址写入一字节的显示数据
+               *  @param  Addr      写入的显示地址
+               *  @param  DispData  写入的显示数据
+               *  @return void
+               *  @note 地址固定方式写入显示数据
+               *  @par Example
+               *  @code
+               *  FD612_SingleDisp(FD612_DIG3_ADDR,FD612_DISP_0);
+               *  @endcode
+               */
+              #if 0
+              void FD612_SingleDisp(INT8U Addr,INT8U DispData)
+              {
+                FD612_Command(FD612_ADDR_STATIC_DIGWR_CMD); 
+                FD612_DispBuff.DispData[Addr]=DispData;
+                FD612_Start();    
+                FD612_WrByte(FD612_DIGADDR_WRCMD|Addr ) ;
+                FD612_WrByte(DispData ) ;
+                FD612_Stop();
+              }
+              #endif  
+                /**
+               *  @brief FD612 某个显示地址开始显示相应的字符串
+               *  @param  Addr 字符串显示的起始地址
+               *  @param  PStr 指向相应的字符串
+               *  @retval INT8U  
+               *  @return 返回函数执行结果,0为执行成功，1为起始地址超出最大地址
+               *  @note   使用该函数需要打开 FD612_DECODE_TAB_EN 
+               *  @par Example
+               *  @code
+               *  FD612_DispString(FD612_DIG3_ADDR,"FD612");
+               *  @endcode 
+               */ 
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 9   
+
+              #if FD612_DECODE_TAB_EN!=0
+              INT8U FD612_DispString( INT8U Addr,char *PStr)
+              {
+                INT8U i;
+                if (Addr>FD612_DISP_MAX_ADDR)return 1;
+                FD612_Command(FD612_ADDR_INC_DIGWR_CMD);  
+                FD612_Start();    
+                FD612_WrByte(FD612_DIGADDR_WRCMD|Addr) ; 
+                for(i=0;i+Addr<=FD612_DISP_MAX_ADDR;i++)
+                {
+                  if(PStr[i]=='\0')break;//判断是否到达字符串的尾部
+                  FD612_DispBuff.DispData[i+Addr]=DispGetCode(PStr[i]);
+                  FD612_WrByte(FD612_DispBuff.DispData[i+Addr]) ; 
+                }
+                FD612_Stop();
+                return 0;
+              }
+              #endif
+              /* @} FD612_NG_API */
+              #endif
+ 498          /**
+ 499           *  @brief  初始化FD612
+ 500           *  @param  void
+ 501           *  @return void
+ 502           *  @note 用户程序开始时调用该函数对FD612进行初始化
+ 503           *  @note 用户可以根据需要进行修改
+ 504           *  @par Example
+ 505           *  @code 共阴参考
+ 506            INT8U i;
+ 507            FD612_8SEG_MODE;
+ 508            for(i=0;i<12;i++){
+ 509              FD612_DispBuff.DispData[i]= 0X00;
+ 510            }
+ 511             FD612_DispBuff.DispData[FD612_DIG1_ADDR]=FD612_DISP_F; 
+ 512             FD612_DispBuff.DispData[FD612_DIG2_ADDR]=FD612_DISP_d;   
+ 513            FD612_DispString(FD612_DIG3_ADDR,"612");
+ 514            FD612_DispStateWr(FD612_INTENS8|FD612_DISP_ON);  
+ 515            FD612_Refresh();
+ 516           *   @endcode 
+ 517           *   @code 共阳参考
+ 518            INT8U i;
+ 519            FD612_8SEG_MODE;
+ 520            for(i=0;i<12;i++){
+ 521              FD612_DispBuff.DispData[i]= 0X00;
+ 522            }
+ 523           FD612_PotiveTNage(FD612_DIG1_ADDR,FD612_DISP_F);
+ 524           FD612_PotiveTNage(FD612_DIG2_ADDR,FD612_DISP_d);  
+ 525            FD612_DispString(FD612_DIG3_ADDR,"612");
+ 526            FD612_DispStateWr(FD612_INTENS8|FD612_DISP_ON);  
+ 527            FD612_Refresh();
+ 528           *  @endcode  
+ 529           */ 
+ 530           
+ 531            void FD612_Init( void)//<共阳参考
+ 532          {
+ 533   1      INT8U i;
+ 534   1        FD612_8SEG_MODE;
+ 535   1        for(i=0;i<12;i++){
+ 536   2          FD612_DispBuff.DispData[i]= 0X00;
+ 537   2        }
+ 538   1      
+ 539   1        FD612_DispStateWr(FD612_INTENS8|FD612_DISP_ON); 
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 10  
+
+ 540   1        FD612_Refresh();
+ 541   1      //  for(i=0;i<10;i++)
+ 542   1      //  {
+ 543   1      //      FD612_PotiveTNage(FD612_DIG1_ADDR,dis[i]);
+ 544   1      //      FD612_PotiveTNage(FD612_DIG2_ADDR,dis[i] );
+ 545   1      //      FD612_PotiveTNage(FD612_DIG3_ADDR,dis[i]);
+ 546   1      //      FD612_PotiveTNage(FD612_DIG4_ADDR,dis[i]);
+ 547   1      //      FD612_PotiveTNage(FD612_DIG5_ADDR,dis[i] );
+ 548   1      //      FD612_PotiveTNage(FD612_DIG6_ADDR,dis[i]);
+ 549   1      //      FD612_PotiveTNage(FD612_DIG7_ADDR,dis[i]);
+ 550   1      //      FD612_Refresh();
+ 551   1      //      mDelaymS(200);    
+ 552   1      //  }
+ 553   1      //    TR0=1;
+ 554   1      //    mDelaymS(200);
+ 555   1      //    TR0=0;
+ 556   1      //    buzzer=0;
+ 557   1      //      FD612_DispBuff.DispData[FD612_DIG1_ADDR]=0xff ; 
+ 558   1      //      FD612_DispBuff.DispData[FD612_DIG2_ADDR]=0xff;
+ 559   1      //      FD612_DispBuff.DispData[FD612_DIG3_ADDR]=0xff ; 
+ 560   1      //      FD612_DispBuff.DispData[FD612_DIG4_ADDR]=0xff;
+ 561   1      //      FD612_Refresh();
+ 562   1      //      mDelaymS(500);
+ 563   1      }
+ 564          
+ 565          
+ 566          void FD612_loop(void)
+ 567          {
+ 568   1        INT8U i;
+ 569   1        for(i=0;i<10;i++)
+ 570   1        {
+ 571   2            FD612_PotiveTNage(FD612_DIG1_ADDR,dis[i]);
+ 572   2            FD612_PotiveTNage(FD612_DIG2_ADDR,dis[i] );
+ 573   2            FD612_PotiveTNage(FD612_DIG3_ADDR,dis[i]);
+ 574   2            FD612_PotiveTNage(FD612_DIG4_ADDR,dis[i]);
+ 575   2            FD612_PotiveTNage(FD612_DIG5_ADDR,dis[i] );
+ 576   2            FD612_PotiveTNage(FD612_DIG6_ADDR,dis[i]);
+ 577   2            FD612_PotiveTNage(FD612_DIG7_ADDR,dis[i]);
+ 578   2            FD612_Refresh();
+ 579   2            mDelaymS(200);    
+ 580   2        }
+ 581   1          TR0=1;
+ 582   1          mDelaymS(200);
+ 583   1          TR0=0;
+ 584   1          buzzer=0; 
+ 585   1      }
+ 586          /* @} FD612_API_FUNTION */
+ 587          /* @} FD612_FUNTION */
+ 588          /* @} FD612_DRIVER */
+ 589          
+ 590          
+ 591          /******************* (C) COPYRIGHT 2013 FDHISI *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    617    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    222       5
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.52.0.0   FD612DRV                                                          01/31/2018 16:08:21 PAGE 11  
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,137 @@
+C51 COMPILER V9.52.0.0   MYDELAY                                                           06/06/2017 18:31:19 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MYDELAY
+OBJECT MODULE PLACED IN .\output\mydelay.obj
+COMPILER INVOKED BY: e:\Keil_v5\C51\BIN\C51.EXE ..\src\mydelay.c LARGE BROWSE INCDIR(..\src;..\inc;.\src) DEBUG OBJECTEX
+                    -TEND PRINT(.\mydelay.lst) TABS(2) OBJECT(.\output\mydelay.obj)
+
+line level    source
+
+   1          /******************************************************************************
+   2          * @file      mydelay.C   延时函数 源文件
+   3          * @brief       mydelay.C    延时函数 源文件
+   4          * @author      LH
+   5          * @version     1A0 
+   6          * @date      2014-03-14    
+   7          * @note
+   8          * @details  
+   9          * @copyright Copyright (c) 2014 by FUZHOU FUDA HISI MICROELECTRONICS CO.,LTD.              
+  10          ******************************************************************************/
+  11          
+  12          /* Includes ------------------------------------------------------------------*/
+  13          #include  "mydelay.h"
+  14          #include <intrins.h>
+  15          
+  16          /* Private functions ---------------------------------------------------------*/
+  17           /**
+  18           *  @brief     1毫秒延时
+  19           *
+  20           *  @paramt    None
+  21           *
+  22           *  @return    None
+  23           *
+  24           *  @par Example
+  25           *  @code
+  26           *  delay1ms(1);  //延时1ms
+  27           *  @endcode
+  28           *
+  29           */
+  30          void delay1ms()   //@22.1184MHz
+  31          {
+  32   1        u8 i, j;
+  33   1      
+  34   1        i = 4;
+  35   1        j = 128;
+  36   1        do
+  37   1        {
+  38   2          while (--j);
+  39   2        } while (--i);
+  40   1      
+  41   1      }
+  42          
+  43           /**
+  44           *  @brief     几毫秒延时
+  45           *
+  46           *  @paramt[in]   t:延时的时间 
+  47           *
+  48           *  @return    None
+  49           *
+  50           *  @par Example
+  51           *  @code
+  52           *  delayms(10);  //延时10ms
+  53           *  @endcode
+  54           *
+C51 COMPILER V9.52.0.0   MYDELAY                                                           06/06/2017 18:31:19 PAGE 2   
+
+  55           */
+  56           void delayms(u16 t)
+  57           {  
+  58   1        while(t--)
+  59   1        {
+  60   2          delay1ms();
+  61   2        }
+  62   1       }
+  63          
+  64            /**
+  65           *  @brief       1us延时
+  66           *
+  67           *  @paramt    None
+  68           *
+  69           *  @return    None
+  70           *
+  71           *  @par Example
+  72           *  @code
+  73           *  delay1us();
+  74           *  @endcode
+  75           *
+  76           */
+  77           void delay1us()    //@22.1184MHz
+  78          {
+  79   1          u8 i;
+  80   1          
+  81   1          _nop_();
+  82   1          _nop_();
+  83   1          i = 2;
+  84   1          while (--i);
+  85   1      
+  86   1      }
+  87          
+  88            /**
+  89           *  @brief       几us延时
+  90           *
+  91           *  @paramt[in]   t:延时的时间 
+  92           *
+  93           *  @return    None
+  94           *
+  95           *  @par Example
+  96           *  @code
+  97           *  delayus(10);  //延时10us
+  98           *  @endcode
+  99           *
+ 100           */
+ 101           void delayus(u16 t)
+ 102           {  
+ 103   1        while(t--)
+ 104   1        {
+ 105   2          delay1us();
+ 106   2        }
+ 107   1       }
+ 108          
+ 109          /******************* (C) COPYRIGHT 2014 FDHISI *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     56    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.52.0.0   MYDELAY                                                           06/06/2017 18:31:19 PAGE 3   
+
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

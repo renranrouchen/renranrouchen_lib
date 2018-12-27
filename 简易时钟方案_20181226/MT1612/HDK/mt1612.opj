@@ -1,0 +1,36 @@
+(ExpressProject ""
+  (ProjectVersion "19981106")
+  (ProjectType "PCB")
+  (Folder "Design Resources"
+    (Folder "Library")
+    (File ".\mt1612.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (NoModify))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (PartMRUSelector)
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" ".\mt1612.dsn")
+      (Path "Design Resources" ".\mt1612.dsn" "SCHEMATIC1")
+      (Select "Design Resources" ".\mt1612.dsn" "SCHEMATIC1" "PAGE1"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -8 -30 0 200 0 472"))
+      (Tab 0))
+    (Doc
+      (Type "COrSchematicDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -8 -30 25 1671 25 539")
+        (Scroll "-108 635")
+        (Zoom "230")
+        (Occurrence "/"))
+      (Path
+         "D:\1海矽\单片机时钟\FD814单片机\简易时钟\SW_4位+秒显示\HDK\MT1612.DSN")
+      (Schematic "SCHEMATIC1")
+      (Page "PAGE1"))))

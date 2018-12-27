@@ -1,0 +1,226 @@
+C51 COMPILER V9.52.0.0   I2C                                                               06/06/2017 18:31:19 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN .\output\I2C.obj
+COMPILER INVOKED BY: e:\Keil_v5\C51\BIN\C51.EXE src\I2C.c LARGE BROWSE INCDIR(..\src;..\inc;.\src) DEBUG OBJECTEXTEND PR
+                    -INT(.\I2C.lst) TABS(2) OBJECT(.\output\I2C.obj)
+
+line level    source
+
+   1          #include "I2C.h"
+   2          /** 
+   3           * @brief   启动I2C
+   4           * @param   无
+   5           * @return  无
+   6           * @note   在SCL高电平期间捕获到SDA的下降沿，使I2C开始工作     
+   7           */ 
+   8          void I2C_Start( void )
+   9          {
+  10   1        SDA_SET;  
+  11   1        SDA_OUT_EN;
+  12   1        SCL_SET;
+  13   1        SCL_OUT_EN;
+  14   1        I2C_DELAY;
+  15   1        SDA_CLR;
+  16   1        I2C_DELAY;      
+  17   1        SCL_CLR;
+  18   1      }
+  19          
+  20          /** 
+  21           * @brief   停止I2C
+  22           * @param   无
+  23           * @return  无
+  24           * @note   在SCL高电平期间捕获到SDA的上升沿，使I2C停止工作     
+  25           */ 
+  26          void I2C_Stop( void )
+  27          {
+  28   1        SDA_CLR;
+  29   1        SDA_OUT_EN;
+  30   1        I2C_DELAY;
+  31   1        SCL_SET;
+  32   1        I2C_DELAY;
+  33   1        SDA_SET;
+  34   1        I2C_DELAY;
+  35   1        SDA_IN_EN;
+  36   1      }
+  37          
+  38          /** 
+  39           * @brief   发送一个字节（8位）数据给I2C
+  40           * @param   dat 无符号8位数据
+  41           * @return  无
+  42           * @note   在SCL上升沿写入I2C ，包括第9个字节读入应答信号     
+  43           */ 
+  44          void I2C_WrByte( u8 dat )
+  45          {
+  46   1        u8 i;
+  47   1        SDA_OUT_EN;
+  48   1        for( i = 0; i != 8; i++ )
+  49   1        {
+  50   2          if( dat & 0x80 ) 
+  51   2          {
+  52   3              SDA_SET;
+  53   3          }
+  54   2          else 
+C51 COMPILER V9.52.0.0   I2C                                                               06/06/2017 18:31:19 PAGE 2   
+
+  55   2          {
+  56   3              SDA_CLR;
+  57   3          }
+  58   2          I2C_DELAY;
+  59   2          SCL_SET;
+  60   2          dat <<= 1;
+  61   2          I2C_DELAY;  // 可选延时
+  62   2          SCL_CLR;
+  63   2        }
+  64   1        SDA_IN_EN;
+  65   1        SDA_SET;
+  66   1        I2C_DELAY;
+  67   1        SCL_SET;
+  68   1        I2C_DELAY;
+  69   1        assert_param(!SDA_READ);  //读应答
+*** WARNING C275 IN LINE 69 OF src\I2C.c: expression with possibly no effect
+  70   1        SCL_CLR;
+  71   1      }
+  72          
+  73          void I2C_WrAddrData(u8 Addr, u8 Data)
+  74          {
+  75   1        I2C_Start();
+  76   1        if(FD_I2cAddrType == I2C_ADDER_TYPE1)
+  77   1        {
+  78   2          I2C_WrByte(I2C_CHIP_ADDR);
+  79   2        }
+  80   1        I2C_WrByte(Addr /* & 0xfe */);
+  81   1        I2C_WrByte(Data);
+  82   1        I2C_Stop();
+  83   1      }
+  84          
+  85          
+  86          void I2C_WrAddrStr(u8 Addr, u8* Str, u8 Length)
+  87          {
+  88   1        u8 i;
+  89   1        u8 Temp;
+  90   1        if(FD_I2cContinuousEna)
+  91   1        {
+  92   2          
+  93   2          I2C_Start();
+  94   2          if(FD_I2cAddrType == I2C_ADDER_TYPE1)
+  95   2          {
+  96   3            I2C_WrByte(I2C_CHIP_ADDR);
+  97   3          }
+  98   2          I2C_WrByte(Addr /* & 0xfe */);
+  99   2          for(i = 0; i < Length; i = i + 1)
+ 100   2          {
+ 101   3            I2C_WrByte(Str[i]);
+ 102   3          }
+ 103   2          I2C_Stop();
+ 104   2        }
+ 105   1        else
+ 106   1        {
+ 107   2          Temp = Addr;
+ 108   2          for(i = 0; i < Length; i = i + 1)
+ 109   2          {
+ 110   3            I2C_WrAddrData(Temp, Str[i]);
+ 111   3            if(FD_I2cAddrType == I2C_ADDER_TYPE1)
+ 112   3            {
+ 113   4              Temp = Temp + 1;
+ 114   4            }
+ 115   3            else
+C51 COMPILER V9.52.0.0   I2C                                                               06/06/2017 18:31:19 PAGE 3   
+
+ 116   3            {
+ 117   4              Temp = Temp + 2;        //这边需要查看i2c地址是加1还是加二
+ 118   4            }
+ 119   3          }
+ 120   2        }
+ 121   1      }
+ 122          
+ 123          /** 
+ 124           * @brief   读取I2C的按键码值
+ 125           * @param   无
+ 126           * @return  返回无符号8位数据
+ 127           * @note   在SCL下降沿读取I2C ，包括第9个字节发送无效应答    
+ 128           */ 
+ 129          u8  I2C_RdByte( u8 ack )
+ 130          {
+ 131   1        u8 dat,i;
+ 132   1        SDA_SET;
+ 133   1        SDA_IN_EN;
+ 134   1        dat = 0;
+ 135   1        for( i = 0; i != 8; i++ )
+ 136   1        {
+ 137   2          I2C_DELAY;  // 可选延时
+ 138   2          SCL_SET;
+ 139   2          I2C_DELAY;  // 可选延时
+ 140   2          dat <<= 1;
+ 141   2          if( SDA_READ )
+ 142   2          {
+ 143   3            I2C_DELAY;
+ 144   3            if( SDA_READ )  //毛刺处理
+ 145   3            {
+ 146   4              dat++;
+ 147   4            }
+ 148   3          }
+ 149   2          SCL_CLR;
+ 150   2        }
+ 151   1        if(ack)
+ 152   1        {
+ 153   2          SDA_SET;
+ 154   2        }
+ 155   1        else 
+ 156   1        {
+ 157   2          SDA_CLR;
+ 158   2        }
+ 159   1        I2C_DELAY;
+ 160   1        SCL_SET;
+ 161   1        I2C_DELAY;
+ 162   1        SCL_CLR;
+ 163   1        return dat;
+ 164   1      }
+ 165          
+ 166          u8 I2C_RdAddrData(u8 Addr)
+ 167          {
+ 168   1        u8 Tmp = 0;
+ 169   1        I2C_Start();
+ 170   1        if(FD_I2cAddrType == I2C_ADDER_TYPE1)
+ 171   1        {
+ 172   2          I2C_WrByte(I2C_CHIP_ADDR | 0x01);
+ 173   2        }
+ 174   1        I2C_WrByte(Addr /* | 0x01 */);
+ 175   1        Tmp = I2C_RdByte(1);
+ 176   1        I2C_Stop();
+ 177   1        return (Tmp);
+C51 COMPILER V9.52.0.0   I2C                                                               06/06/2017 18:31:19 PAGE 4   
+
+ 178   1      }
+ 179          
+ 180          void I2C_RdAddrStr(u8 Addr, u8* Str, u8 Length)
+ 181          {
+ 182   1        u8 i;
+ 183   1        I2C_Start();
+ 184   1        if(FD_I2cAddrType == I2C_ADDER_TYPE1)
+ 185   1        {
+ 186   2          I2C_WrByte(I2C_CHIP_ADDR | 0x01);
+ 187   2        }
+ 188   1        I2C_WrByte(Addr /* | 0x01 */);
+ 189   1        for(i = 0; i < Length - 1; i = i + 1)
+ 190   1        {
+ 191   2          Str[i] = I2C_RdByte(0);
+ 192   2        }
+ 193   1        Str[i] = I2C_RdByte(1);
+ 194   1        I2C_Stop();
+ 195   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    430    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      12
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

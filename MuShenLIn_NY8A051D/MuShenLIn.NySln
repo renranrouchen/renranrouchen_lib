@@ -1,0 +1,19 @@
+﻿
+Nyquest IDE Solution File, Format Version 1.00
+# NYIDE 3.10.0.1119
+Project("{608D5F73-6C2E-489F-8ED6-C0FBCCEB586F}") = "MuShenLIn", "MuShenLIn.naprj", "{96AA1FD7-6C3B-484F-A42D-1EDDFE45FEB4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|CNy8 = Debug|CNy8
+		Release|CNy8 = Release|CNy8
+		Debug|CNy8 = Debug|CNy8
+		Release|CNy8 = Release|CNy8
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{96AA1FD7-6C3B-484F-A42D-1EDDFE45FEB4}.Debug|CNy8.Build.0 = Debug|CNy8
+		{96AA1FD7-6C3B-484F-A42D-1EDDFE45FEB4}.Debug|CNy8.ActiveCfg = Debug|CNy8
+		{96AA1FD7-6C3B-484F-A42D-1EDDFE45FEB4}.Release|CNy8.Build.0 = Release|CNy8
+		{96AA1FD7-6C3B-484F-A42D-1EDDFE45FEB4}.Release|CNy8.ActiveCfg = Release|CNy8
+	EndGlobalSection
+EndGlobal

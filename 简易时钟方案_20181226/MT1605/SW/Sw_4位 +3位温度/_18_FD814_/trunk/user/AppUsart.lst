@@ -1,0 +1,651 @@
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE APPUSART
+OBJECT MODULE PLACED IN .\output\AppUsart.obj
+COMPILER INVOKED BY: e:\Keil_v5\C51\BIN\C51.EXE src\AppUsart.c LARGE BROWSE INCDIR(..\src;..\inc;.\src) DEBUG OBJECTEXTE
+                    -ND PRINT(.\AppUsart.lst) TABS(2) OBJECT(.\output\AppUsart.obj)
+
+line level    source
+
+   1          #include "AppUsart.h"
+   2          #include "stdlib.h"
+   3          #include "mydelay.h"
+   4          
+   5          sbit   FD650_INT = P3^4;
+   6          
+   7          u8 ReceiveCnt = 0x00; //½ÓÊÕÊý¾Ý»º´æ¼ÆÊý:ÀàËÆÓÚÐ´Ö¸Õë
+   8          u8 ReadCnt = 0x00;    //µ¥Æ¬»úÊý¾Ý¶Á:ÀàËÆÓÚ¶ÁÖ¸Õë
+   9          u8 ReceiveStop = 0x00;  //0: Ã»ÓÐ½ÓÊÕÍê , 1:½ÓÊÕÍê
+  10          u8 ReceiveStart = 0x00; //0:Í£Ö¹½ÓÊÕ´¦Àí,1:¿ªÊ¼½ÓÊÕ´¦Àí
+  11          u8 ReceiveDataBufeOld = 0x00;//ÉÏÒ»¸ö¶Áµ½µÄ¼Ä´æÆ÷
+  12          u16 RegCnt = 0x00;    //·ÀÖ¹´óÊý¾ÝµÄÊ±ºò,Êý¾ÝÒç³ö,ËùÒÔ¶¨ÒåÎª16Î»
+  13          u8 RegType = 0x00;    //¼Ä´æÆ÷ÀàÐÍ: 0:ÆÕÍ¨¼Ä´æÆ÷ , 1:PageA, 2:PageB
+  14          u8 RegAddr = 0x00;    //¼Ä´æÆ÷µØÖ·
+  15          u8 WriteNum = 0x00;   //Ð´ÈëÊý¾ÝµÄ¸öÊý
+  16          u8 WriteDataCnt = 0x00; //»ñÈ¡µ½µÄÊý¾Ý¸öÊý¸öÊý¼ÆÊý
+  17          u8 FD_ChipCmd = 0x00; //ÉÏÎ»»úÒëÂëºóµÄÃüÁî
+  18          u8 FD_ChipMode = 0x00;  //Ä£Ê½Ñ¡Ôñ:Ä¬ÈÏ²»½øÐÐÆäËû²Ù×÷
+  19          u8 FD_PrintCmdEna = 0x00; //ÊÇ·ñ´òÓ¡ÉÏÎ»»ú·¢ËÍµÄÃüÁî,Ä¬ÈÏ²»´òÓ¡
+  20          u16 I2cDelayCnt = 0x00; //i2cÑÓÊ±ÐèÒªÓÃµ½µÄ
+  21          u8 FD_PrintfSysTimeEna = 0x00;  //ÊÇ·ñ´òÓ¡Ê±¼ä¼Ä´æÆ÷
+  22          u8 FD_I2cContinuousEna = 0x00;  //i2cÊÇ·ñÁ¬ÐøÄ¬ÈÏ²»Á¬Ðø
+  23          u8 FD_WaveViewEna = 0x00;   //²¨ÐÎÏÔÊ¾Ê¹ÄÜ
+  24          u8 FD_I2cAddrType = I2C_ADDER_TYPE0;  //¼Ä´æÆ÷µØÖ·Ä¬ÈÏÊÇ:I2C_ADDER_TYPE0
+  25          
+  26          u8 ChipType = CMD_FDXXX_CHIP_TYPE_FD650;
+  27          u8 FD6XX_STATE_ADDR = 0x48;
+  28          u8 FD6XX_KEY_ADDR = 0x4F;
+  29          u8 FD6XX_DIG0_ADDR = 0x68;      //<DIG0µØÖ·
+  30          u8 FD6XX_DIG1_ADDR = 0x6a;      //<DIG1µØÖ·
+  31          u8 FD6XX_DIG2_ADDR = 0x6c;      //<DIG2µØÖ·
+  32          u8 FD6XX_DIG3_ADDR = 0x6e;      //<DIG3µØÖ·
+  33          u8 FD6XX_DIG4_ADDR = 0x66;      //<DIG4µØÖ·
+  34          u8 FD6XX_DIG5_ADDR = 0x70;      //ÎÞÐ§
+  35          u8 FD6XX_DIG6_ADDR = 0x72;      //ÎÞÐ§
+  36          u8 FD6XX_DIG7_ADDR = 0x74;      //ÎÞÐ§
+  37          u8 FD5XX_CNTR1_ADDR = 0x09;
+  38          u8 FD5XX_Cntr1RegBuf = 0x78;    //Cntr1ÉÏµçÄ¬ÈÏ×´Ì¬
+  39          
+  40          typedef struct 
+  41          {
+  42            u8 Cntr;
+  43            u8 Key;
+  44            u8 Dis[DIS_LENGTH];
+  45          } FD6XX_Reg; 
+  46          
+  47          FD6XX_Reg FD6XX_RegBuf;
+  48          
+  49          ReceiveData ReceiveDataBufe[RECEIVE_LENGTH];
+  50          u8 WriteDataBufe[WRITE_DATA_LENGTH];
+  51          
+  52          //·¢ËÍÊý¾Ý¸øÉÏÎ»»ú
+  53          void AppUsart_UsartSendData(u8 Type, u8 Addr, u8 * Str, u8 length)
+  54          {
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 2   
+
+  55   1        u8 i;
+  56   1        putchar(0x55);
+  57   1        putchar(0xaa);
+  58   1        putchar(Type);
+  59   1        putchar(Addr);
+  60   1        putchar(length);
+  61   1        for(i = 0; i < length; i++)
+  62   1        {
+  63   2          putchar(Str[i]);
+  64   2        }
+  65   1        putchar(0xaa);
+  66   1        putchar(0x55);  
+  67   1      }
+  68          
+  69          //´òÓ¡ÏµÍ³Ê±¼ä
+  70          void AppUsart_PrintfSysTime()
+  71          {
+  72   1        AppUsart_UsartSendData(TYPE_FDXXX_FUN, CMD_FDXXX_FUN_CMD_PRINTF_TIME_EN, "", 0);
+  73   1      }
+  74          
+  75          //°´¼ü¶ÁÈ¡
+  76          void AppUsart_ReadKey(u8 mode)  // 0: ´òÓ¡±ä»¯ , 1:Ö±½Ó´òÓ¡°´¼üÖµ
+  77          {
+  78   1        u8 KeyNum = 0;
+  79   1        KeyNum = I2C_RdAddrData(FD6XX_KEY_ADDR);
+  80   1        if((KeyNum != FD6XX_RegBuf.Key) | mode) //ÓÐ°´¼ü°´ÏÂ»òÕß°´¼üÖµ²»Ò»Ñù
+  81   1        {
+  82   2          if(FD_PrintfSysTimeEna)
+  83   2          {
+  84   3            AppUsart_PrintfSysTime();
+  85   3          }
+  86   2          FD650_INT = 1;
+  87   2          printf("KEY = %02X\n", (u16)KeyNum);
+  88   2          FD650_INT = 0;
+  89   2          FD6XX_RegBuf.Key = KeyNum;  //¸üÐÂ¼Ä´æÆ÷µÄÖµ //¼ÇÂ¼ÉÏÒ»¸ö°´¼üÖµ
+  90   2          AppUsart_UsartSendData(TYPE_FDXX_KEY, CMD_KEY_REG | 0x80,&FD6XX_RegBuf.Key, 1);
+  91   2        }
+  92   1      }
+  93          
+  94          
+  95          //´òÓ¡ÐÅÏ¢
+  96          void AppUsart_PrintfInfo()
+  97          {
+  98   1        printf("µ±Ç°Ð¾Æ¬ÐÅÏ¢:\n");
+  99   1        AppUsart_PrintfSysTime();
+ 100   1        switch(ChipType)
+ 101   1        {
+ 102   2          case CMD_FDXXX_CHIP_TYPE_FD650 : printf("Ð¾Æ¬Ä£Ê½: FD650\n"); break;
+ 103   2          case CMD_FDXXX_CHIP_TYPE_FD651 : printf("Ð¾Æ¬Ä£Ê½: FD651\n"); break;
+ 104   2          case CMD_FDXXX_CHIP_TYPE_FD638 : printf("Ð¾Æ¬Ä£Ê½: FD638\n"); break;
+ 105   2          case CMD_FDXXX_CHIP_TYPE_FD632 : printf("Ð¾Æ¬Ä£Ê½: FD632\n"); break;
+ 106   2          case CMD_FDXXX_CHIP_TYPE_FD5012 : printf("Ð¾Æ¬Ä£Ê½: FD5012\n"); break;
+ 107   2          default : printf("Ð¾Æ¬Ä£Ê½: FD650\n"); break;
+ 108   2        }
+ 109   1        switch(FD_ChipMode)
+ 110   1        {
+ 111   2          case 0 : printf("¹¤×÷Ä£Ê½: ÏÔÊ¾Ä£Ê½0\n"); break;
+ 112   2          case 1 : printf("¹¤×÷Ä£Ê½: ÏÔÊ¾Ä£Ê½1\n"); break;
+ 113   2          case 2 : printf("¹¤×÷Ä£Ê½: °´¼üÄ£Ê½0\n"); break;
+ 114   2          case 3 : printf("¹¤×÷Ä£Ê½: °´¼üÄ£Ê½1\n"); break;
+ 115   2          case 4 : printf("¹¤×÷Ä£Ê½: ÆäËûÄ£Ê½\n"); break;
+ 116   2          case 5 : printf("¹¤×÷Ä£Ê½: ÏÔÊ¾Ê±¼ä\n"); break;
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 3   
+
+ 117   2          case 6 : printf("¹¤×÷Ä£Ê½: ÎÄ¼þÃüÁîÑ­»·\n"); break;
+ 118   2          default : printf("¹¤×÷Ä£Ê½: ÏÔÊ¾Ä£Ê½0\n"); break;
+ 119   2        }
+ 120   1        printf("CNTR = %02X\n", (u16)FD6XX_RegBuf.Cntr);  //´òÓ¡¼Ä´æÆ÷Öµ
+ 121   1        AppUsart_ReadKey(1);
+ 122   1        printf("DIS0 = %02X; DIS1 = %02X; DIS2 = %02X; DIS3 = %02X; \nDIS4 = %02X; DIS5 = %02X; DIS6 = %02X; DIS7
+             - = %02X; \n", \
+ 123   1        (u16)FD6XX_RegBuf.Dis[0], (u16)FD6XX_RegBuf.Dis[1], (u16)FD6XX_RegBuf.Dis[2], (u16)FD6XX_RegBuf.Dis[3], \
+ 124   1        (u16)FD6XX_RegBuf.Dis[4], (u16)FD6XX_RegBuf.Dis[5], (u16)FD6XX_RegBuf.Dis[6], (u16)FD6XX_RegBuf.Dis[7] );
+             -  //´òÓ¡ÏÔÊ¾Öµ 
+ 125   1      
+ 126   1        printf("DIS0~DIS7 = %02X %02X %02X %02X %02X %02X %02X %02X \n", \
+ 127   1        (u16)FD6XX_RegBuf.Dis[0], (u16)FD6XX_RegBuf.Dis[1], (u16)FD6XX_RegBuf.Dis[2], (u16)FD6XX_RegBuf.Dis[3], \
+ 128   1        (u16)FD6XX_RegBuf.Dis[4], (u16)FD6XX_RegBuf.Dis[5], (u16)FD6XX_RegBuf.Dis[6], (u16)FD6XX_RegBuf.Dis[7] );
+             -  //´òÓ¡ÏÔÊ¾Öµ 
+ 129   1      
+ 130   1        printf("\n");
+ 131   1      }
+ 132          
+ 133          void AppUsart_Init()
+ 134          {
+ 135   1        u16 i;
+ 136   1        ReceiveCnt = 0x00;  //½ÓÊÕÊý¾Ý»º´æ¼ÆÊý:ÀàËÆÓÚÐ´Ö¸Õë
+ 137   1        ReadCnt = 0x00;   //µ¥Æ¬»úÊý¾Ý¶Á:ÀàËÆÓÚ¶ÁÖ¸Õë
+ 138   1        ReceiveStop = 0x00; //0: Ã»ÓÐ½ÓÊÕÍê , 1:½ÓÊÕÍê
+ 139   1        ReceiveStart = 0x00;  //0:Í£Ö¹½ÓÊÕ´¦Àí,1:¿ªÊ¼½ÓÊÕ´¦Àí
+ 140   1        ReceiveDataBufeOld = 0x00;//ÉÏÒ»¸ö¶Áµ½µÄ¼Ä´æÆ÷
+ 141   1        RegCnt = 0x00;    //·ÀÖ¹´óÊý¾ÝµÄÊ±ºò,Êý¾ÝÒç³ö,ËùÒÔ¶¨ÒåÎª16Î»
+ 142   1        RegType = 0x00;     //¼Ä´æÆ÷ÀàÐÍ: 0:ÆÕÍ¨¼Ä´æÆ÷ , 1:PageA, 2:PageB
+ 143   1        RegAddr = 0x00;   //¼Ä´æÆ÷µØÖ·
+ 144   1        WriteNum = 0x00;    //Ð´ÈëÊý¾ÝµÄ¸öÊý
+ 145   1        WriteDataCnt = 0x00;  //»ñÈ¡µ½µÄÊý¾Ý¸öÊý¸öÊý¼ÆÊý
+ 146   1        FD_ChipCmd = 0x00;  //ÉÏÎ»»úÒëÂëºóµÄÃüÁî
+ 147   1        FD_ChipMode = 0x00; //Ä£Ê½Ñ¡Ôñ:Ä¬ÈÏ²»½øÐÐÆäËû²Ù×÷
+ 148   1        FD_PrintCmdEna = 0x00;  //ÊÇ·ñ´òÓ¡ÉÏÎ»»ú·¢ËÍµÄÃüÁî,Ä¬ÈÏ²»´òÓ¡
+ 149   1        I2cDelayCnt = 0x00; //i2cÑÓÊ±ÐèÒªÓÃµ½µÄ
+ 150   1        FD_PrintfSysTimeEna = 0x00; //ÊÇ·ñ´òÓ¡Ê±¼ä
+ 151   1        FD_I2cContinuousEna = 0x00; //i2cÊÇ·ñÁ¬ÐøÄ¬ÈÏ²»Á¬Ðø
+ 152   1        FD_WaveViewEna = 0x00;    //²¨ÐÎÏÔÊ¾Ê¹ÄÜ
+ 153   1        FD_I2cAddrType = I2C_ADDER_TYPE0; //¼Ä´æÆ÷µØÖ·Ä¬ÈÏÊÇ:I2C_ADDER_TYPE0
+ 154   1        
+ 155   1        ChipType = CMD_FDXXX_CHIP_TYPE_FD650;
+ 156   1        FD6XX_STATE_ADDR = 0x48;
+ 157   1        FD6XX_KEY_ADDR = 0x4F;
+ 158   1        FD6XX_DIG0_ADDR = 0x68;     //<DIG0µØÖ·
+ 159   1        FD6XX_DIG1_ADDR = 0x6a;     //<DIG1µØÖ·
+ 160   1        FD6XX_DIG2_ADDR = 0x6c;     //<DIG2µØÖ·
+ 161   1        FD6XX_DIG3_ADDR = 0x6e;     //<DIG3µØÖ·
+ 162   1        FD6XX_DIG4_ADDR = 0x66;     //<DIG4µØÖ·
+ 163   1        FD6XX_DIG5_ADDR = 0x70;     //ÎÞÐ§
+ 164   1        FD6XX_DIG6_ADDR = 0x72;     //ÎÞÐ§
+ 165   1        FD6XX_DIG7_ADDR = 0x74;     //ÎÞÐ§
+ 166   1      
+ 167   1        FD6XX_RegBuf.Cntr = 0x30;
+ 168   1        FD6XX_RegBuf.Dis[0] = 0x00; 
+ 169   1        FD6XX_RegBuf.Dis[1] = 0x00; 
+ 170   1        FD6XX_RegBuf.Dis[2] = 0x00; 
+ 171   1        FD6XX_RegBuf.Dis[3] = 0x00; 
+ 172   1        FD6XX_RegBuf.Dis[4] = 0x00; 
+ 173   1        FD6XX_RegBuf.Dis[5] = 0x00; 
+ 174   1        FD6XX_RegBuf.Dis[6] = 0x00; 
+ 175   1        FD6XX_RegBuf.Dis[7] = 0x00; 
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 4   
+
+ 176   1        FD6XX_RegBuf.Key = 0x2e;
+ 177   1      
+ 178   1        for(i = 0; i < RECEIVE_LENGTH; i++) //È«¾Ö±äÁ¿Êý¾Ý³õÊ¼»¯,²»ÄÜÔÚ¶¨ÒåµÄÊ±ºò³õÊ¼»¯
+ 179   1        {
+ 180   2          ReceiveDataBufe[i].Flag = 0;
+ 181   2          ReceiveDataBufe[i].Data = 0;
+ 182   2        }
+ 183   1        printf("FD Ð¾Æ¬²âÊÔÈí¼þÆô¶¯³É¹¦\n");
+ 184   1        AppUsart_PrintfInfo();
+ 185   1      
+ 186   1        FD650_INT = 0;
+ 187   1      }
+ 188          
+ 189          //´®¿Ú½ÓÊÕÊý¾Ý´¦Àí
+ 190          void AppUsart_UsartDataDeal(void)
+ 191          {
+ 192   1         if(ReceiveDataBufe[ReadCnt].Flag)
+ 193   1         {
+ 194   2           ReceiveDataBufe[ReadCnt].Flag = 0;   //¶Áµ½Êý¾Ý,¶ÔÓ¦µÄ±ê¼ÇÎ»È¥³ý
+ 195   2          
+ 196   2          if((ReceiveDataBufeOld == 0x55) && (ReceiveDataBufe[ReadCnt].Data == 0xaa) && (RegCnt == 0)) //ÂËÈ¥½ÓÊÕÊ
+             -ý¾ÝµÄÊ±ºò,³öÏÖ 55aaÇé¿ö
+ 197   2           {
+ 198   3             ReceiveStop = 0x00;
+ 199   3             ReceiveStart = 0x01;
+ 200   3             RegCnt = 0x00;
+ 201   3             WriteDataCnt = 0x00;
+ 202   3           }
+ 203   2          else if((ReceiveDataBufeOld == 0xaa) && (ReceiveDataBufe[ReadCnt].Data == 0x55) && (RegCnt >= (WriteNum 
+             -+ 5)))  //¼ÓÈë WriteNum ÊÇÎªÁË·ÀÖ¹ÃüÁîºÍÊý¾Ý»ìÂÒ
+ 204   2          {
+ 205   3            ReceiveStop = 0x01;
+ 206   3            ReceiveStart = 0x00;
+ 207   3            RegCnt = 0x00;  
+ 208   3          }
+ 209   2          
+ 210   2          if(ReceiveStart)
+ 211   2          {
+ 212   3            
+ 213   3            switch(RegCnt)
+ 214   3            {
+ 215   4              case 0 : break;
+ 216   4              case 1 : RegType = ReceiveDataBufe[ReadCnt].Data; break;  //Êý¾ÝÀàÐÍ
+ 217   4              case 2 : RegAddr = ReceiveDataBufe[ReadCnt].Data; break;  //¼Ä´æÆ÷µØÖ·
+ 218   4              case 3 : WriteNum = ReceiveDataBufe[ReadCnt].Data; break; //Êý¾Ý¸öÊý
+ 219   4              default : break;
+ 220   4            } 
+ 221   3            if((RegCnt >= 4) /* && ((RegType & 0x7f) == 0x07) */)   
+ 222   3            {
+ 223   4              WriteDataBufe[WriteDataCnt] = ReceiveDataBufe[ReadCnt].Data;  
+ 224   4              WriteDataCnt ++;  
+ 225   4              if(WriteDataCnt >= WRITE_DATA_LENGTH)
+ 226   4              {
+ 227   5                RegCnt = 0;       //³¬¹ý³¤¶ÈÁË,ÇåÁã´¦Àí!!!!!!!!!!!!!!!!!!!!!!
+ 228   5                WriteDataCnt = 0;
+ 229   5              }
+ 230   4            }
+ 231   3            RegCnt ++;                //×î¶à²»ÄÜ³¬¹ý65535,·ñÔò»áÒç³ö
+ 232   3          }
+ 233   2          
+ 234   2          ReceiveDataBufeOld = ReceiveDataBufe[ReadCnt].Data; //¼ÇÂ¼ÉÏÒ»¸öÊý¾Ý
+ 235   2      
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 5   
+
+ 236   2           ReadCnt++;
+ 237   2           if(ReadCnt >= RECEIVE_LENGTH)
+ 238   2           {
+ 239   3             ReadCnt = 0;
+ 240   3           }
+ 241   2         }
+ 242   1      }
+ 243          
+ 244          //Ä£Ê½²Ù×÷
+ 245          void AppUsart_ModeDeal()
+ 246          {
+ 247   1        switch(FD_ChipMode)
+ 248   1        {
+ 249   2          case CMD_FDXXX_MODE_OTHER : break;            //ÆäËûÄ£Ê½µÄÊ±ºò²»½øÐÐÈÎºÎ²Ù×÷
+ 250   2          // case CMD_FDXXX_MODE_DIS0 : AppUsart_ReadKey(0); break;
+ 251   2          // case CMD_FDXXX_MODE_DIS1 : AppUsart_ReadKey(0);break;
+ 252   2          // case CMD_FDXXX_MODE_KEY0 : AppUsart_ReadKey(0); break; //ÉÏÎ»»ú²»½øÐÐ²Ù×÷,Ö»½øÐÐ¶Á°´¼ü²Ù×÷
+ 253   2          // case CMD_FDXXX_MODE_KEY1 : AppUsart_ReadKey(0); break;
+ 254   2          default : AppUsart_ReadKey(0); break;
+ 255   2        }
+ 256   1      }
+ 257          
+ 258          //Ë¢ÐÂÏÔÊ¾
+ 259          void AppUsart_Refresh()
+ 260          {
+ 261   1        I2C_WrAddrData(FD6XX_STATE_ADDR, FD6XX_RegBuf.Cntr);
+ 262   1        I2C_WrAddrData(FD6XX_DIG0_ADDR, FD6XX_RegBuf.Dis[0]);
+ 263   1        I2C_WrAddrData(FD6XX_DIG1_ADDR, FD6XX_RegBuf.Dis[1]);
+ 264   1        I2C_WrAddrData(FD6XX_DIG2_ADDR, FD6XX_RegBuf.Dis[2]);
+ 265   1        I2C_WrAddrData(FD6XX_DIG3_ADDR, FD6XX_RegBuf.Dis[3]);
+ 266   1        I2C_WrAddrData(FD6XX_DIG4_ADDR, FD6XX_RegBuf.Dis[4]);
+ 267   1        I2C_WrAddrData(FD6XX_DIG5_ADDR, FD6XX_RegBuf.Dis[5]);
+ 268   1        I2C_WrAddrData(FD6XX_DIG6_ADDR, FD6XX_RegBuf.Dis[6]);
+ 269   1        I2C_WrAddrData(FD6XX_DIG7_ADDR, FD6XX_RegBuf.Dis[7]);
+ 270   1      }
+ 271          
+ 272          //i2cËÙ¶ÈÑÓÊ±º¯Êý 
+ 273          void AppUsart_I2cDelay(void)
+ 274          {
+ 275   1        int i = 0;
+ 276   1        int Temp = I2cDelayCnt;
+ 277   1        while(Temp --)
+ 278   1        {
+ 279   2          i = 2;
+ 280   2          while(i --);
+ 281   2        }
+ 282   1      }
+ 283          
+ 284          void AppUsart_WaveView(u8 Ena)
+ 285          {
+ 286   1        u8 Temp[WAVE_NUM];
+ 287   1        int i = 0;
+ 288   1        static int cnt = 0;
+ 289   1        
+ 290   1        if(Ena && (cnt > 20))
+ 291   1        {
+ 292   2          cnt = 0;
+ 293   2          // I2C_RdAddrStr(FD5012_ADDER_KPV0, Temp, WAVE_NUM);  //µ±Ç°¼ÆÊýÖµ
+ 294   2          for(i = 0; i < 6; i ++)
+ 295   2          {
+ 296   3            Temp[i] = WaveBufe[i];
+ 297   3          }
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 6   
+
+ 298   2          AppUsart_UsartSendData(TYPE_FDXXX_WAVE_VIEW, CMD_FDXXX_WAVE_ALL_EN | 0x80, Temp, WAVE_NUM);
+ 299   2          
+ 300   2          // I2C_RdAddrStr(FD5012_ADDER_KCV0, Temp, WAVE_NUM);  //²Î¿¼¼ÆÊýÖµ
+ 301   2          // AppUsart_UsartSendData(TYPE_FDXXX_WAVE_VIEW, CMD_FDXXX_WAVE_KCV0 | 0x80, Temp, WAVE_NUM);
+ 302   2        }
+ 303   1        cnt ++;
+ 304   1      }
+ 305          
+ 306          //Ð¾Æ¬Ñ¡Ôñ
+ 307          void AppUsart_ChipSel()
+ 308          {
+ 309   1        if((ChipType == CMD_FDXXX_CHIP_TYPE_FD650) || (ChipType == CMD_FDXXX_CHIP_TYPE_FD632))
+ 310   1        {
+ 311   2          FD6XX_STATE_ADDR = 0x48;
+ 312   2          FD6XX_KEY_ADDR = 0x4F;
+ 313   2          FD6XX_DIG0_ADDR = 0x68;     //<DIG0µØÖ·
+ 314   2          FD6XX_DIG1_ADDR = 0x6a;     //<DIG1µØÖ·
+ 315   2          FD6XX_DIG2_ADDR = 0x6c;     //<DIG2µØÖ·
+ 316   2          FD6XX_DIG3_ADDR = 0x6e;     //<DIG3µØÖ·
+ 317   2          FD6XX_DIG4_ADDR = 0x70;     //ÎÞÐ§
+ 318   2          FD6XX_DIG5_ADDR = 0x72;     //ÎÞÐ§
+ 319   2          FD6XX_DIG6_ADDR = 0x74;     //ÎÞÐ§
+ 320   2          FD6XX_DIG7_ADDR = 0x76;     //ÎÞÐ§    
+ 321   2          FD_I2cAddrType = I2C_ADDER_TYPE0;
+ 322   2        }
+ 323   1        else if((ChipType == CMD_FDXXX_CHIP_TYPE_FD638))
+ 324   1        {
+ 325   2          FD6XX_STATE_ADDR = 0x48;
+ 326   2          FD6XX_KEY_ADDR  = 0x4F;
+ 327   2          FD6XX_DIG0_ADDR = 0x60;     //<DIG0µØÖ·
+ 328   2          FD6XX_DIG1_ADDR = 0x62;     //<DIG1µØÖ·
+ 329   2          FD6XX_DIG2_ADDR = 0x64;     //<DIG2µØÖ·
+ 330   2          FD6XX_DIG3_ADDR = 0x66;     //<DIG3µØÖ·
+ 331   2          FD6XX_DIG4_ADDR = 0x68;     //<DIG4µØÖ·
+ 332   2          FD6XX_DIG5_ADDR = 0x6a;     //<DIG5µØÖ·
+ 333   2          FD6XX_DIG6_ADDR = 0x6c;     //<DIG6µØÖ·
+ 334   2          FD6XX_DIG7_ADDR = 0x6e;     //<DIG7µØÖ·   
+ 335   2          FD_I2cAddrType = I2C_ADDER_TYPE0;
+ 336   2        }
+ 337   1        else if((ChipType == CMD_FDXXX_CHIP_TYPE_FD651))
+ 338   1        {
+ 339   2          FD6XX_STATE_ADDR = 0x48;
+ 340   2          FD6XX_KEY_ADDR = 0x4F;
+ 341   2          FD6XX_DIG0_ADDR = 0x66;     //<DIG0µØÖ·
+ 342   2          FD6XX_DIG1_ADDR = 0x68;     //<DIG1µØÖ·
+ 343   2          FD6XX_DIG2_ADDR = 0x6a;     //<DIG2µØÖ·
+ 344   2          FD6XX_DIG3_ADDR = 0x6c;     //<DIG3µØÖ·
+ 345   2          FD6XX_DIG4_ADDR = 0x6e;     //<DIG4µØÖ·
+ 346   2          FD6XX_DIG5_ADDR = 0x70;     //ÎÞÐ§
+ 347   2          FD6XX_DIG6_ADDR = 0x72;     //ÎÞÐ§
+ 348   2          FD6XX_DIG7_ADDR = 0x74;     //ÎÞÐ§  
+ 349   2          FD_I2cAddrType = I2C_ADDER_TYPE0;   
+ 350   2        }
+ 351   1        else if((ChipType == CMD_FDXXX_CHIP_TYPE_FD5012))
+ 352   1        {
+ 353   2          FD6XX_STATE_ADDR = 0x08;
+ 354   2          FD5XX_CNTR1_ADDR = 0x09;
+ 355   2          FD6XX_KEY_ADDR  =  FD5012_ADDR_KEYBUF;
+ 356   2          FD6XX_DIG0_ADDR = 0x00;     //<DIG0µØÖ·
+ 357   2          FD6XX_DIG1_ADDR = 0x01;     //<DIG1µØÖ·
+ 358   2          FD6XX_DIG2_ADDR = 0x02;     //<DIG2µØÖ·
+ 359   2          FD6XX_DIG3_ADDR = 0x03;     //<DIG3µØÖ·
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 7   
+
+ 360   2          FD6XX_DIG4_ADDR = 0x04;     //<DIG4µØÖ·
+ 361   2          FD6XX_DIG5_ADDR = 0x05;     
+ 362   2          FD6XX_DIG6_ADDR = 0x06;     
+ 363   2          FD6XX_DIG7_ADDR = 0x07; 
+ 364   2          FD_I2cAddrType = I2C_ADDER_TYPE1;   
+ 365   2        }
+ 366   1      }
+ 367          
+ 368          void AppUsart_CmdDeal()
+ 369          {
+ 370   1        u8 i = 0;
+ 371   1        if(ReceiveStop) //ÆäËûÃüÁîÇåÁã
+ 372   1        {
+ 373   2          ReceiveStop = 0x00; //ÒªÇå³ý,²»È»ÏÂ´Î·¢ËÍµÄÊ±ºò,»á¶à´òÓ¡Ò»´Î
+ 374   2          WriteDataCnt = 0x00;//ÇåÁã
+ 375   2          if(RegType == TYPE_FDXX_DISPLAY)  //Ð´ÏÔÊ¾
+ 376   2          {
+ 377   3            if(ChipType == CMD_FDXXX_CHIP_TYPE_FD5012)
+ 378   3            {
+ 379   4              switch(RegAddr)
+ 380   4              {
+ 381   5                case CMD_DIS0_REG : I2C_WrAddrStr(FD6XX_DIG0_ADDR, WriteDataBufe,WriteNum > 8 ? 8 : WriteNum); break;
+ 382   5                case CMD_DIS1_REG : I2C_WrAddrStr(FD6XX_DIG1_ADDR, WriteDataBufe,WriteNum > 7 ? 7 : WriteNum); break;
+ 383   5                case CMD_DIS2_REG : I2C_WrAddrStr(FD6XX_DIG2_ADDR, WriteDataBufe,WriteNum > 6 ? 6 : WriteNum); break;
+ 384   5                case CMD_DIS3_REG : I2C_WrAddrStr(FD6XX_DIG3_ADDR, WriteDataBufe,WriteNum > 5 ? 5 : WriteNum); break;
+ 385   5                case CMD_DIS4_REG : I2C_WrAddrStr(FD6XX_DIG4_ADDR, WriteDataBufe,WriteNum > 4 ? 4 : WriteNum); break;
+ 386   5                case CMD_DIS5_REG : I2C_WrAddrStr(FD6XX_DIG5_ADDR, WriteDataBufe,WriteNum > 3 ? 3 : WriteNum); break;
+ 387   5                case CMD_DIS6_REG : I2C_WrAddrStr(FD6XX_DIG6_ADDR, WriteDataBufe,WriteNum > 2 ? 2 : WriteNum); break;
+ 388   5                case CMD_DIS7_REG : I2C_WrAddrStr(FD6XX_DIG7_ADDR, WriteDataBufe,WriteNum > 1 ? 1 : WriteNum); break;
+ 389   5                default : break;
+ 390   5              }
+ 391   4            }
+ 392   3            else
+ 393   3            {
+ 394   4              switch(RegAddr)
+ 395   4              {
+ 396   5                case CMD_DIS0_REG : I2C_WrAddrStr(FD6XX_DIG0_ADDR, WriteDataBufe,WriteNum); break;
+ 397   5                case CMD_DIS1_REG : I2C_WrAddrStr(FD6XX_DIG1_ADDR, WriteDataBufe,WriteNum); break;
+ 398   5                case CMD_DIS2_REG : I2C_WrAddrStr(FD6XX_DIG2_ADDR, WriteDataBufe,WriteNum); break;
+ 399   5                case CMD_DIS3_REG : I2C_WrAddrStr(FD6XX_DIG3_ADDR, WriteDataBufe,WriteNum); break;
+ 400   5                case CMD_DIS4_REG : I2C_WrAddrStr(FD6XX_DIG4_ADDR, WriteDataBufe,WriteNum); break;
+ 401   5                case CMD_DIS5_REG : I2C_WrAddrStr(FD6XX_DIG5_ADDR, WriteDataBufe,WriteNum); break;
+ 402   5                case CMD_DIS6_REG : I2C_WrAddrStr(FD6XX_DIG6_ADDR, WriteDataBufe,WriteNum); break;
+ 403   5                case CMD_DIS7_REG : I2C_WrAddrStr(FD6XX_DIG7_ADDR, WriteDataBufe,WriteNum); break;
+ 404   5                default : break;
+ 405   5              }       
+ 406   4            }
+ 407   3            for(i = 0; (i < WriteNum) && (i < DIS_LENGTH); i++)
+ 408   3            {
+ 409   4              FD6XX_RegBuf.Dis[RegAddr + i] = WriteDataBufe[i]; //Ð´¼Ä´æÆ÷Ð´Èë»º´æÖÐ
+ 410   4            }
+ 411   3          }
+ 412   2          else if(RegType == TYPE_FDXX_KEY) //¶Á°´¼ü
+ 413   2          {
+ 414   3            if(RegAddr == CMD_KEY_REG)  //Ö»¶ÁÒ»´Î°´¼ü
+ 415   3            {
+ 416   4              AppUsart_ReadKey(1);      
+ 417   4            }
+ 418   3          }
+ 419   2          else if(RegType == TYPE_FDXX_REG)//¼Ä´æÆ÷ÅäÖÃ
+ 420   2          {
+ 421   3            switch(RegAddr)
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 8   
+
+ 422   3            {
+ 423   4              case CMD_CNTR_REG : I2C_WrAddrData(FD6XX_STATE_ADDR, WriteDataBufe[0]);FD6XX_RegBuf.Cntr = WriteDataBu
+             -fe[0]; break;
+ 424   4              case CMD_CNTR_LIGHT_REG : FD6XX_RegBuf.Cntr = FD6XX_RegBuf.Cntr & 0x8f; FD6XX_RegBuf.Cntr =FD6XX_RegBu
+             -f.Cntr | (WriteDataBufe[0] << 4);I2C_WrAddrData(FD6XX_STATE_ADDR, FD6XX_RegBuf.Cntr); break;
+ 425   4              case CMD_CNTR1_REG : I2C_WrAddrData(FD5XX_CNTR1_ADDR, WriteDataBufe[0]);/* FD6XX_RegBuf.Cntr = WriteDa
+             -taBufe[0]; */ break;
+ 426   4              case CMD_MSDIFF : I2C_WrAddrData(FD5012_ADDR_MSDIFF, WriteDataBufe[0]); break;
+ 427   4              case CMD_BDV : I2C_WrAddrData(FD5012_ADDR_BDV, WriteDataBufe[0]); break;
+ 428   4              
+ 429   4              case CMD_REG_KDV0  : I2C_WrAddrData(FD5012_ADDER_KDV0 , WriteDataBufe[0]); break;
+ 430   4              case CMD_REG_KDV1  : I2C_WrAddrData(FD5012_ADDER_KDV1 , WriteDataBufe[0]); break;
+ 431   4              case CMD_REG_KDV2  : I2C_WrAddrData(FD5012_ADDER_KDV2 , WriteDataBufe[0]); break;
+ 432   4              case CMD_REG_KDV3  : I2C_WrAddrData(FD5012_ADDER_KDV3 , WriteDataBufe[0]); break;
+ 433   4              case CMD_REG_KDV4  : I2C_WrAddrData(FD5012_ADDER_KDV4 , WriteDataBufe[0]); break;
+ 434   4              case CMD_REG_KDV5  : I2C_WrAddrData(FD5012_ADDER_KDV5 , WriteDataBufe[0]); break;
+ 435   4              case CMD_REG_KDV6  : I2C_WrAddrData(FD5012_ADDER_KDV6 , WriteDataBufe[0]); break;
+ 436   4              case CMD_REG_KDV7  : I2C_WrAddrData(FD5012_ADDER_KDV7 , WriteDataBufe[0]); break;
+ 437   4              case CMD_REG_KDV8  : I2C_WrAddrData(FD5012_ADDER_KDV8 , WriteDataBufe[0]); break;
+ 438   4              case CMD_REG_KDV9  : I2C_WrAddrData(FD5012_ADDER_KDV9 , WriteDataBufe[0]); break;
+ 439   4              case CMD_REG_KDV10 : I2C_WrAddrData(FD5012_ADDER_KDV10, WriteDataBufe[0]); break;
+ 440   4              case CMD_REG_KDV11 : I2C_WrAddrData(FD5012_ADDER_KDV11, WriteDataBufe[0]); break;
+ 441   4              
+ 442   4              case CMD_REG_KUV0  : I2C_WrAddrData(FD5012_ADDER_KUV0 , WriteDataBufe[0]); break;
+ 443   4              case CMD_REG_KUV1  : I2C_WrAddrData(FD5012_ADDER_KUV1 , WriteDataBufe[0]); break;
+ 444   4              case CMD_REG_KUV2  : I2C_WrAddrData(FD5012_ADDER_KUV2 , WriteDataBufe[0]); break;
+ 445   4              case CMD_REG_KUV3  : I2C_WrAddrData(FD5012_ADDER_KUV3 , WriteDataBufe[0]); break;
+ 446   4              case CMD_REG_KUV4  : I2C_WrAddrData(FD5012_ADDER_KUV4 , WriteDataBufe[0]); break;
+ 447   4              case CMD_REG_KUV5  : I2C_WrAddrData(FD5012_ADDER_KUV5 , WriteDataBufe[0]); break;
+ 448   4              case CMD_REG_KUV6  : I2C_WrAddrData(FD5012_ADDER_KUV6 , WriteDataBufe[0]); break;
+ 449   4              case CMD_REG_KUV7  : I2C_WrAddrData(FD5012_ADDER_KUV7 , WriteDataBufe[0]); break;
+ 450   4              case CMD_REG_KUV8  : I2C_WrAddrData(FD5012_ADDER_KUV8 , WriteDataBufe[0]); break;
+ 451   4              case CMD_REG_KUV9  : I2C_WrAddrData(FD5012_ADDER_KUV9 , WriteDataBufe[0]); break;
+ 452   4              case CMD_REG_KUV10 : I2C_WrAddrData(FD5012_ADDER_KUV10, WriteDataBufe[0]); break;
+ 453   4              case CMD_REG_KUV11 : I2C_WrAddrData(FD5012_ADDER_KUV11, WriteDataBufe[0]); break;
+ 454   4      
+ 455   4              case CMD_REG_KAV0  : I2C_WrAddrData(FD5012_ADDER_KAV0 , WriteDataBufe[0]); break;
+ 456   4              case CMD_REG_KAV1  : I2C_WrAddrData(FD5012_ADDER_KAV1 , WriteDataBufe[0]); break;
+ 457   4              case CMD_REG_KAV2  : I2C_WrAddrData(FD5012_ADDER_KAV2 , WriteDataBufe[0]); break;
+ 458   4              case CMD_REG_KAV3  : I2C_WrAddrData(FD5012_ADDER_KAV3 , WriteDataBufe[0]); break;
+ 459   4              case CMD_REG_KAV4  : I2C_WrAddrData(FD5012_ADDER_KAV4 , WriteDataBufe[0]); break;
+ 460   4              case CMD_REG_KAV5  : I2C_WrAddrData(FD5012_ADDER_KAV5 , WriteDataBufe[0]); break;
+ 461   4              case CMD_REG_KAV6  : I2C_WrAddrData(FD5012_ADDER_KAV6 , WriteDataBufe[0]); break;
+ 462   4              case CMD_REG_KAV7  : I2C_WrAddrData(FD5012_ADDER_KAV7 , WriteDataBufe[0]); break;
+ 463   4              case CMD_REG_KAV8  : I2C_WrAddrData(FD5012_ADDER_KAV8 , WriteDataBufe[0]); break;
+ 464   4              case CMD_REG_KAV9  : I2C_WrAddrData(FD5012_ADDER_KAV9 , WriteDataBufe[0]); break;
+ 465   4              case CMD_REG_KAV10 : I2C_WrAddrData(FD5012_ADDER_KAV10, WriteDataBufe[0]); break;
+ 466   4              case CMD_REG_KAV11 : I2C_WrAddrData(FD5012_ADDER_KAV11, WriteDataBufe[0]); break;
+ 467   4              
+ 468   4              default : break;
+ 469   4            }
+ 470   3            
+ 471   3          }
+ 472   2          else if(RegType == TYPE_FDXX_REG_BIT_SET) //¶ÁÐ´¼Ä´æÆ÷:°´Î»²Ù×÷ÖÃÎ»
+ 473   2          {
+ 474   3            switch(RegAddr)
+ 475   3            {
+ 476   4              case CMD_CNTR_BIT_REG : FD6XX_RegBuf.Cntr = FD6XX_RegBuf.Cntr | WriteDataBufe[0]; I2C_WrAddrData(FD6XX
+             -_STATE_ADDR, FD6XX_RegBuf.Cntr); FD6XX_RegBuf.Cntr = FD6XX_RegBuf.Cntr & 0xFB; break; 
+ 477   4              case CMD_DIS0_BIT_REG : I2C_WrAddrData(FD6XX_DIG0_ADDR, FD6XX_RegBuf.Dis[0] | WriteDataBufe[0]); break
+             -;
+ 478   4              case CMD_DIS1_BIT_REG : I2C_WrAddrData(FD6XX_DIG1_ADDR, FD6XX_RegBuf.Dis[1] | WriteDataBufe[0]); break
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 9   
+
+             -;
+ 479   4              case CMD_DIS2_BIT_REG : I2C_WrAddrData(FD6XX_DIG2_ADDR, FD6XX_RegBuf.Dis[2] | WriteDataBufe[0]); break
+             -;
+ 480   4              case CMD_DIS3_BIT_REG : I2C_WrAddrData(FD6XX_DIG3_ADDR, FD6XX_RegBuf.Dis[3] | WriteDataBufe[0]); break
+             -;
+ 481   4              case CMD_DIS4_BIT_REG : I2C_WrAddrData(FD6XX_DIG4_ADDR, FD6XX_RegBuf.Dis[4] | WriteDataBufe[0]); break
+             -;
+ 482   4              case CMD_DIS5_BIT_REG : I2C_WrAddrData(FD6XX_DIG5_ADDR, FD6XX_RegBuf.Dis[5] | WriteDataBufe[0]); break
+             -;
+ 483   4              case CMD_DIS6_BIT_REG : I2C_WrAddrData(FD6XX_DIG6_ADDR, FD6XX_RegBuf.Dis[6] | WriteDataBufe[0]); break
+             -;
+ 484   4              case CMD_DIS7_BIT_REG : I2C_WrAddrData(FD6XX_DIG7_ADDR, FD6XX_RegBuf.Dis[7] | WriteDataBufe[0]); break
+             -;
+ 485   4              case CMD_CNTR1_BIT_REG : FD5XX_Cntr1RegBuf = FD5XX_Cntr1RegBuf | WriteDataBufe[0]; I2C_WrAddrData(FD5X
+             -X_CNTR1_ADDR, FD5XX_Cntr1RegBuf); FD5XX_Cntr1RegBuf = FD5XX_Cntr1RegBuf & 0xEB; break;  
+ 486   4              default : break;
+ 487   4            }
+ 488   3          }
+ 489   2          else if(RegType == TYPE_FDXX_REG_BIT_CLR) //¶ÁÐ´¼Ä´æÆ÷:°´Î»²Ù×÷ÇåÁã
+ 490   2          {
+ 491   3            switch(RegAddr)
+ 492   3            {
+ 493   4              case CMD_CNTR_BIT_REG : FD6XX_RegBuf.Cntr = FD6XX_RegBuf.Cntr  & (~WriteDataBufe[0]); I2C_WrAddrData(F
+             -D6XX_STATE_ADDR, FD6XX_RegBuf.Cntr); FD6XX_RegBuf.Cntr = FD6XX_RegBuf.Cntr & 0xFB; break; 
+ 494   4              case CMD_DIS0_BIT_REG : I2C_WrAddrData(FD6XX_DIG0_ADDR, FD6XX_RegBuf.Dis[0] & (~WriteDataBufe[0]));bre
+             -ak;
+ 495   4              case CMD_DIS1_BIT_REG : I2C_WrAddrData(FD6XX_DIG1_ADDR, FD6XX_RegBuf.Dis[1] & (~WriteDataBufe[0]));bre
+             -ak;
+ 496   4              case CMD_DIS2_BIT_REG : I2C_WrAddrData(FD6XX_DIG2_ADDR, FD6XX_RegBuf.Dis[2] & (~WriteDataBufe[0]));bre
+             -ak;
+ 497   4              case CMD_DIS3_BIT_REG : I2C_WrAddrData(FD6XX_DIG3_ADDR, FD6XX_RegBuf.Dis[3] & (~WriteDataBufe[0]));bre
+             -ak;
+ 498   4              case CMD_DIS4_BIT_REG : I2C_WrAddrData(FD6XX_DIG4_ADDR, FD6XX_RegBuf.Dis[4] & (~WriteDataBufe[0]));bre
+             -ak;
+ 499   4              case CMD_DIS5_BIT_REG : I2C_WrAddrData(FD6XX_DIG5_ADDR, FD6XX_RegBuf.Dis[5] & (~WriteDataBufe[0]));bre
+             -ak;
+ 500   4              case CMD_DIS6_BIT_REG : I2C_WrAddrData(FD6XX_DIG6_ADDR, FD6XX_RegBuf.Dis[6] & (~WriteDataBufe[0]));bre
+             -ak;
+ 501   4              case CMD_DIS7_BIT_REG : I2C_WrAddrData(FD6XX_DIG7_ADDR, FD6XX_RegBuf.Dis[7] & (~WriteDataBufe[0]));bre
+             -ak;
+ 502   4              case CMD_CNTR1_BIT_REG : FD5XX_Cntr1RegBuf = FD5XX_Cntr1RegBuf & (~WriteDataBufe[0]); I2C_WrAddrData(F
+             -D5XX_CNTR1_ADDR, FD5XX_Cntr1RegBuf); FD5XX_Cntr1RegBuf = FD5XX_Cntr1RegBuf & 0xEB; break; 
+ 503   4              default : break;
+ 504   4            }
+ 505   3          }
+ 506   2          else if(RegType == TYPE_FDXXX_MODE) //Ä£Ê½Ñ¡Ôñ
+ 507   2          {
+ 508   3            FD_ChipMode = RegAddr;  //»ñÈ¡Ä£Ê½µÄÖ¸Áî´úÂë
+ 509   3          }
+ 510   2          else if(RegType == TYPE_MCU)    //CPU²Ù×÷ÃüÁî
+ 511   2          {
+ 512   3            #ifdef STC12LE5A60S2    //µ¥Æ¬»ú¶ÔÓ¦µÄ¸´Î»²Ù×÷
+ 513   3               if(RegAddr == CMD_CPU_RST)
+ 514   3               {
+ 515   4      //            IAP_CONTR |= 0x20;  //µ¥Æ¬»ú¸´Î»
+ 516   4               }
+ 517   3            #endif
+ 518   3          }
+ 519   2          else if(RegType == TYPE_FDXXX_FUN)  //ÆäËû¹¦ÄÜÄ£Ê½
+ 520   2          {
+ 521   3            switch(RegAddr)
+ 522   3            {
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 10  
+
+ 523   4              case CMD_FDXXX_FUN_REFRESH : AppUsart_Refresh(); break; //Ë¢ÐÂÏÂÏÔÊ¾
+ 524   4              case CMD_FDXXX_FUN_PRINTF_INFO : AppUsart_PrintfInfo(); break;    //´òÓ¡ÐÅÏ¢
+ 525   4              case CMD_FDXXX_FUN_PRINFT_CDM_EN : FD_PrintCmdEna = 0x01; break;  //´òÓ¡ÃüÁî
+ 526   4              case CMD_FDXXX_FUN_PRINFT_CMD_DISABLE: FD_PrintCmdEna = 0x00; break; //²»´òÓ¡ÃüÁî
+ 527   4              case CMD_FDXXX_FUN_CMD_I2C_SPEED : I2cDelayCnt = WriteDataBufe[0]; break;
+ 528   4              case CMD_FDXXX_FUN_CMD_I2C_10K : I2cDelayCnt = 255; break;
+ 529   4              case CMD_FDXXX_FUN_CMD_I2C_20K : I2cDelayCnt = 150; break;
+ 530   4              case CMD_FDXXX_FUN_CMD_I2C_50K : I2cDelayCnt = 200; break;
+ 531   4              case CMD_FDXXX_FUN_CMD_I2C_100K: I2cDelayCnt = 150; break;
+ 532   4              case CMD_FDXXX_FUN_CMD_I2C_200K: I2cDelayCnt = 100; break;
+ 533   4              case CMD_FDXXX_FUN_CMD_I2C_500K: I2cDelayCnt = 50; break;
+ 534   4              case CMD_FDXXX_FUN_CMD_I2C_1M  : I2cDelayCnt = 20; break;
+ 535   4              case CMD_FDXXX_FUN_CMD_I2C_2M  : I2cDelayCnt = 10; break;
+ 536   4              case CMD_FDXXX_FUN_CMD_I2C_4M  : I2cDelayCnt = 0; break;
+ 537   4              case CMD_FDXXX_FUN_CMD_PRINTF_TIME_EN  : if(!FD_PrintCmdEna) {AppUsart_PrintfSysTime();} FD_PrintfSysT
+             -imeEna = 0x01; break; //´òÓ¡ÏµÍ³Ê±¼ä
+ 538   4              case CMD_FDXXX_FUN_CMD_PRINTF_TIME_DISABLE : FD_PrintfSysTimeEna = 0x00; break;
+ 539   4              case CMD_FDXXX_FUN_CMD_I2C_CONTINUOUS_EN : FD_I2cContinuousEna = 0x01;break;
+ 540   4              case CMD_FDXXX_FUN_CMD_I2C_CONTINUOUS_DISABLE : FD_I2cContinuousEna = 0x00;break;
+ 541   4              default : break;
+ 542   4            }     
+ 543   3          }
+ 544   2          else if(RegType == TYPE_FDXXX_CHIP_TYPE)
+ 545   2          {
+ 546   3            ChipType = RegAddr;
+ 547   3            AppUsart_ChipSel();
+ 548   3          }
+ 549   2          else if(RegType == TYPE_MY_CMD) //×Ô¶¨ÒåÃüÁî
+ 550   2          {
+ 551   3            AppUsart_UsartSendData(RegType, RegAddr | 0x80,WriteDataBufe, WriteNum);  //·µ»Ø·¢ËÍµÄÃüÁîÊý¾Ý
+ 552   3          }
+ 553   2          else if(RegType == TYPE_FDXXX_WAVE_VIEW)  //²¨ÐÎÏÔÊ¾
+ 554   2          {
+ 555   3            switch(RegAddr)
+ 556   3            {
+ 557   4              case CMD_FDXXX_WAVE_ALL_EN : if(ChipType == CMD_FDXXX_CHIP_TYPE_FD5012){FD_WaveViewEna = 0x01;}else{pr
+             -intf("µ±Ç°Ð¾Æ¬Ä£Ê½·ÇFD5012,ÇëÖØÐÂÑ¡ÔñFD5012Ð¾Æ¬\n");} break; //´òÓ¡²¨ÐÎÊ¹ÄÜ
+ 558   4              case CMD_FDXXX_WAVE_ALL_DISABLE : FD_WaveViewEna = 0x00; break; //²»´òÓ¡²¨ÐÎ
+ 559   4              default : FD_WaveViewEna = 0x00;break;
+ 560   4            }
+ 561   3          }
+ 562   2          
+ 563   2          if(FD_PrintCmdEna)  //ÊÇ·ñ´òÓ¡ÉÏÎ»»ú·¢ËÍµÄÃüÁîµÄÃüÁî,°´¼ü¼ì²âµÄÊ±ºò,ÔÚÉÏÎ»»ú·¢ËÍÆµ·±µÄÊ±ºò,´òÓ¡°´¼üÖµ»áÓÐ
+             -ÎÊÌâ
+ 564   2          {
+ 565   3            AppUsart_UsartSendData(RegType, RegAddr,WriteDataBufe, WriteNum); //·µ»Ø·¢ËÍµÄÃüÁîÊý¾Ý
+ 566   3          }
+ 567   2        }
+ 568   1      }
+ 569          
+ 570          void AppUsart_Run()
+ 571          {
+ 572   1        AppUsart_UsartDataDeal();
+ 573   1        AppUsart_CmdDeal();
+ 574   1        AppUsart_ModeDeal();
+ 575   1        AppUsart_WaveView(FD_WaveViewEna);
+ 576   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   3953    ----
+   CONSTANT SIZE    =    506    ----
+C51 COMPILER V9.52.0.0   APPUSART                                                          06/06/2017 18:31:18 PAGE 11  
+
+   XDATA SIZE       =    545      22
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,8 @@
+".\output\AppUsart.obj",
+".\output\I2C.obj",
+".\output\main.obj",
+".\output\mydelay.obj",
+".\output\TouchKey.obj" 
+TO ".\output\FD814" 
+PRINT(".\FD814.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

@@ -1,0 +1,65 @@
+C51 COMPILER V9.52.0.0   TOUCHKEY                                                          06/06/2017 18:31:19 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE TOUCHKEY
+OBJECT MODULE PLACED IN .\output\TouchKey.obj
+COMPILER INVOKED BY: e:\Keil_v5\C51\BIN\C51.EXE TouchKey.C LARGE BROWSE INCDIR(..\src;..\inc;.\src) DEBUG OBJECTEXTEND T
+                    -ABS(2) OBJECT(.\output\TouchKey.obj)
+
+line level    source
+
+   1          
+   2          /********************************** (C) COPYRIGHT *******************************
+   3          * File Name          : TouchKey.C
+   4          * Author             : FD814
+   5          * Version            : V1.0
+   6          * Date               : 2017/01/20
+   7          * Description        : FD814 触摸按键采样间隔设置、通道选择和切换和中断处理函数   
+   8          *******************************************************************************/
+   9          
+  10          #include "FD814.H"                                                       
+  11          #include "TouchKey.H"
+  12          #include "stdio.h"
+  13          
+  14          u8 WaveBufe[6];
+  15          
+  16          /*******************************************************************************
+  17          * Function Name  : TouchKeyChannelQuery()
+  18          * Description    : 触摸按键通道状态查询
+  19          * Input          : None
+  20          * Output         : None
+  21          * Return         : None
+  22          *******************************************************************************/
+  23          void TouchKeyChannelQuery()
+  24          {
+  25   1        UINT8 ch;
+  26   1          UINT16 KeyData;
+  27   1      
+  28   1          while((TKEY_CTRL&bTKC_IF) == 0);                                          //bTKC_IF变为1时，本周期采样
+             -完成
+  29   1          KeyData = TKEY_DAT;                                                       //保持87us,尽快取走
+  30   1          ch = TKEY_CTRL&7;                                                         //获取当前采样通道
+  31   1        // printf("ch = %0bu, KeyData = %0u\n", ch, KeyData);
+  32   1        WaveBufe[ch - 1] = (u8) (KeyData / 64);
+  33   1          if ( ch > 5 ){
+  34   2             TKEY_CTRL = TKEY_CTRL & 0xF8 | 0x01;                              //从首通道开始采样
+  35   2          }     
+  36   1          else
+  37   1          {
+  38   2             TKEY_CTRL ++;                                                          //切换至下一个采样通道
+  39   2          }
+  40   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     57    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,47 @@
+C51 COMPILER V9.52.0.0   USR_CONFIG                                                        12/27/2017 14:10:35 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE USR_CONFIG
+OBJECT MODULE PLACED IN .\Output\usr_config.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE App\usr_config.c LARGE BROWSE INCDIR(.\StdDriver\inc;.\App) DEBUG OBJECT
+                    -EXTEND PRINT(.\List\usr_config.lst) TABS(2) OBJECT(.\Output\usr_config.obj)
+
+line level    source
+
+   1          #include "usr_config.h"
+   2          
+   3          
+   4          extern hour_12_24_flag;
+   5          extern struct DATA_TIME time;
+   6          
+   7          
+   8          
+   9          
+  10          
+  11          void read_single_ds1302(UINT8 addr,UINT8  time)
+  12          {
+  13   1          ResetDS1302();              
+  14   1          WriteByteDS1302(addr); //读取时的地址
+  15   1          time=ReadByteDS1302();
+  16   1      }
+  17          
+  18          void  write_single_ds1302(UINT8 addr,UINT8  time)
+  19          {
+  20   1        ResetDS1302();
+  21   1        WriteByteDS1302(addr); //写入秒的地址
+  22   1        WriteByteDS1302(time);
+  23   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     55    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

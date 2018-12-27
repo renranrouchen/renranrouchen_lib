@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "uart.h": "c",
+        "config.h": "c",
+        "delay.h": "c",
+        "usr.h": "c",
+        "ca51f3sfr.h": "c"
+    }
+}

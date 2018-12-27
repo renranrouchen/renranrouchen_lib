@@ -1,0 +1,462 @@
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE FD650LIB
+OBJECT MODULE PLACED IN .\output\FD650LIB.obj
+COMPILER INVOKED BY: f:\Keil\C51\BIN\C51.EXE src\FD650LIB.c LARGE BROWSE INCDIR(..\src;..\inc;.\src) DEBUG OBJECTEXTEND 
+                    -PRINT(.\FD650LIB.lst) OBJECT(.\output\FD650LIB.obj)
+
+line level    source
+
+   1          /** 
+   2          * @file                   FD650Drv.C    数码管显示驱动/按键扫描芯片 客户代码
+   3          * @brief       FD650 的驱动
+   4          * @author      ywaby
+   5          * @version     A1 
+   6          * @date                         2013-2-18    
+   7          * @note
+   8          * @details  
+   9          * @copyright Copyright (c) 2012 by FUZHOU FUDA HISI MICROELECTRONICS CO.,LTD.              
+  10          */
+  11          
+  12          #define FD650_NACK 1///<无应答信号
+  13          #define FD650_ACK  0///<有应答信号
+  14          typedef unsigned char  BOOLEAN;       //注意：不要使用bit定义，因为在结构体里无法使用
+  15          typedef unsigned char  INT8U;         //无符号8位数
+  16          typedef unsigned long   INT32U;        //无符号32位数
+  17          
+  18          #define  FALSE  0
+  19          #define  TRUE  1
+  20          /* SCL 脚输出高电平 */
+  21          extern void FD650_scl_set(void);
+  22          /* SCL 脚输出低电平 */
+  23          extern void FD650_scl_clr(void);
+  24          /* SCL 脚输出方向 */
+  25          extern void FD650_scl_dout(void);
+  26          /* SDA 脚输出高电平 */
+  27          extern void FD650_sda_set(void); 
+  28          /* SDA 脚输出低电平 */
+  29          extern void FD650_sda_clr(void);
+  30          /* SDA 脚读电平 */
+  31          extern BOOLEAN FD650_sda_get(void);
+  32          /* SDA 脚输出方向 */
+  33          extern void FD650_sda_dout(void);
+  34          /* SCL 脚输入方向 */
+  35          extern void FD650_sda_din(void);
+  36          /* 模拟总线电平持续延时 */
+  37          extern void FD650_delay(void); 
+  38          #define         FD650_DELAY_LOW                 FD650_DELAY_1US         ///<时钟低电平延时                              
+  39          #define         FD650_DELAY_HIGH                FD650_DELAY_1US                         ///<时钟高电平延时                                                                                                                                
+  40          #define         FD650_DELAY_WAIT                                FD650_DELAY_1US                                 ///<数据读取等待时间
+  41          #define         FD650_DELAY_SU_STA      FD650_DELAY_1US                                 ///<起始信号建立时间 
+  42          #define         FD650_DELAY_HD_STA      FD650_DELAY_1US                                 ///<起始信号保持时间                                     
+  43          #define         FD650_DELAY_SU_STO      FD650_DELAY_1US                                 ///<停止信号建立时间  
+  44          
+  45          #define         FD650_SCL_D_OUT  FD650_scl_dout()                                                                               ///< 设置SCL接口为输出方向,推荐推挽输出
+  46          #define         FD650_SDA_D_OUT   FD650_sda_dout()                               ///< 设置SDA接口为输出方向,推荐推挽输出
+  47          #define         FD650_SDA_D_IN    FD650_sda_din()                                                                             ///< 设置SDA接口为输入方向（最好设置为高阻输入，
+             -不可以设置成为推挽）
+  48          #define         FD650_SDA_IN               FD650_sda_get()                      ///< 当SDA设为输入方向时，读取到的电平值
+  49          #define         FD650_SCL_SET              FD650_scl_set()              ///< 将SCL设置为高电平
+  50          #define         FD650_SCL_CLR                   FD650_scl_clr()         ///< 将SCL设置为低电平
+  51          #define         FD650_SDA_SET                   FD650_sda_set()         ///< 将SDA设置为高电平
+  52          #define         FD650_SDA_CLR                   FD650_sda_clr()         ///< 将SDA设置为低电平
+  53          #define  FD650_DELAY_1US       /*FD650_delay() */             ///< 延时的宏定义，最小延时时间为1uS
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 2   
+
+  54          
+  55            //  加密算法
+  56          #define XOR_MASK(src1,bit1,src2,bit2)  (((src1>>bit1)^(src2>>bit2))&0x00000001)       
+  57          #define BIT_MASK(src,bit) ((src>>bit)&0x00000001)                                    
+  58          #define SPLIT_GEN(b5,b4,b3,b2,b1,b0)  ((b5<<5)|(b4<<4)|(b3<<3)|(b2<<2)|(b1<<1)|b0)    
+  59          
+  60          #define CHUZHI_GEN(b20,b19,b18,b17,b16,b15,b14,b13,b12,b11,b10,b9,b8,b7,b6,b5,b4,b3,b2,b1,b0) \
+  61              ((b20<<20)|(b19<<19)|(b18<<18)|(b17<<17)|(b16<<16)|(b15<<15)|(b14<<14)|(b13<<13)|(b12<<12)|((b11<<11)\
+  62              |(b10<<10)|(b9<<9)|(b8<<8)|(b7<<7)|b6<<6)|(b5<<5)|(b4<<4)|(b3<<3)|(b2<<2)|(b1<<1)|b0) 
+  63                  
+  64          #define USERID_GAOTU 0
+  65          
+  66          
+  67          #define USERID_VERSION USERID_GAOTU     
+  68          static INT8U  CtrlWord =0x55;
+  69          static INT32U OriginCode =0  ;           //初值    
+  70          static INT32U CommCnt =0  ;           //通信次数
+  71          
+  72          #define FD650_ENY_WRCMD   0x4a          // 写加密控制字
+  73          #define FD650_ENY_RDCMD   0x4d          // 读加密控制字
+  74          #define FD650_RdSw_CMD   0x4F                     //<读取FD650按键码值的命令
+  75          
+  76          /** @addtogroup FD650_DRIVER FD650 驱动
+  77            @{
+  78          */
+  79           /** 
+  80           * @ingroup  FD650_APP_DATA  
+  81           * @brief 共阴数码管码值编码数组,依次对应的显示：0,1,2,3,4,5,6,7,8,9,A,b,C,d,E,F                
+  82           */
+  83          /** @addtogroup  FD650_FUNCTION  函数
+  84            @{
+  85          */
+  86          /** @addtogroup  FD650_COMMUNICATION  通信时序
+  87            @{
+  88          */
+  89          /**
+  90           *  @brief  启动FD650通信
+  91           *  @param  void
+  92           *  @return void
+  93           *  @note   在SCL高电平期间捕获到SDA的下降沿，FD650开始通信   
+  94           */
+  95          void FD650_Start( void )                         
+  96          {
+  97   1              FD650_SDA_SET;                                   
+  98   1              FD650_SCL_SET;
+  99   1              FD650_SDA_D_OUT;                                 //设置SDA为输出方向 
+ 100   1              FD650_SCL_D_OUT;                                 //设置SCL为输出方向    
+ 101   1              FD650_DELAY_SU_STA;
+ 102   1              FD650_SDA_CLR;                                   //发送起始信号
+ 103   1              FD650_DELAY_HD_STA;      
+ 104   1              FD650_SCL_CLR;                                   
+ 105   1              FD650_DELAY_LOW;
+ 106   1        CommCnt++;
+ 107   1      }               
+ 108          
+ 109          /**
+ 110           *  @brief  停止FD650通信
+ 111           *  @param  void
+ 112           *  @return void
+ 113           *  @note   在SCL高电平期间捕获到SDA的上升沿，FD650停止通信  
+ 114           */
+ 115          void FD650_Stop( void )
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 3   
+
+ 116          {  
+ 117   1          FD650_SDA_D_OUT;                              /* 设置SDA为输出方向 */
+ 118   1          FD650_SDA_CLR;                                        /* 设置SDA为低电平 */                 
+ 119   1          FD650_DELAY_LOW;            
+ 120   1          FD650_SCL_SET;                                        /* 设置SCL为高电平 */ 
+ 121   1          FD650_DELAY_SU_STO;                           /* 停止信号建立时间: */
+ 122   1          FD650_SDA_SET;                                        /* 设置SDA为高电平 */
+ 123   1          FD650_SDA_D_IN;                                       /* 设置SDA为输入方向 */
+ 124   1      }
+ 125          /**
+ 126           *  @brief  发送一个字节数据给FD650,并读取应答位
+ 127           *  @param  dat 发送的一字节数据
+ 128           *  @retval  BOOLEAN  
+ 129           *  @return 读取的ACK应答位
+ 130           *  @note   数据传输低位在前，高位在后
+ 131           */
+ 132          void FD650_WrByte( INT8U dat )
+ 133          {
+ 134   1              INT8U i;                                        /* 移位写出的位数寄存器 */
+ 135   1        BOOLEAN ACKTemp=0;
+ 136   1              FD650_SDA_D_OUT;                        /* 设置SDA为输出方向 */
+ 137   1              for( i = 0; i != 8; i++ )           /* 输出8 bit的数据 */        
+ 138   1              {               
+ 139   2          FD650_DELAY_LOW;  
+ 140   2                      if( dat & 0x80 ) 
+ 141   2                      {
+ 142   3                          FD650_SDA_SET;                  /* 设置SDA为高电平 */
+ 143   3                      }
+ 144   2                      else 
+ 145   2                      {
+ 146   3                          FD650_SDA_CLR;                      /* 设置SDA为低电平 */
+ 147   3                      }
+ 148   2        FD650_SCL_SET;                                /* 设置SCL为高电平 */
+ 149   2        dat <<= 1;                                    /* 输出数据右移一位，数据从高到低的输出 */
+ 150   2        FD650_DELAY_HIGH;           /* SCL时钟高电平时间：*/
+ 151   2        FD650_SCL_CLR;                                /* 设置SCL为低电平 */   
+ 152   2              }               
+ 153   1        FD650_DELAY_LOW;  
+ 154   1        //////读取ACK位/////
+ 155   1        FD650_SDA_SET;                                 /* 设置SDA为高电平 */      
+ 156   1        FD650_SDA_D_IN;                                   /* 设置SDA为输入方向 */ 
+ 157   1        FD650_SCL_SET;                                          /* SCL时钟的高电平时间：*/
+ 158   1        if(FD650_SDA_IN==0) ACKTemp=0; /* 读入1 bit值 */
+ 159   1        else ACKTemp=1; 
+ 160   1        FD650_DELAY_HIGH;                 /* SCL时钟高电平时间*/
+ 161   1        FD650_SCL_CLR;                                      /* SCL时钟的低电平*/
+ 162   1        FD650_DELAY_LOW;      
+ 163   1      }       
+ 164          /**
+ 165           *  @brief  从FD650读取一个字节数据
+ 166           *  @param  MSACK 发送的ACK值 发送不应答位 ACK=1；发送应答位 ACK=0
+ 167           *  @retval  INT8U  
+ 168           *  @return 读取的一字节数据
+ 169           *  @note   数据传输高位在前，低位在后
+ 170           */
+ 171           static INT8U  FD650_RdByte( BOOLEAN MSACK )
+ 172          {
+ 173   1              INT8U i;                            
+ 174   1              INT8U dat=0;                   /* 移位读入的位数寄存器i */
+ 175   1              FD650_SDA_SET;                       /* 设置SDA为高电平 */
+ 176   1              FD650_SDA_D_IN;                      /* 设置SDA为输入方向 */
+ 177   1              for( i = 0; i != 8; i++ )                /* 读入8 bit的数据 */ 
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 4   
+
+ 178   1              {                                                                
+ 179   2                      FD650_SCL_SET;                           /* 设置SCL为高电平 */
+ 180   2                      FD650_DELAY_HIGH;                              /* SCL时钟高电平时间：*/
+ 181   2                      dat <<= 1;                                        /* 读入数据右移一位，数据从高到低的读入 */
+ 182   2                      if( FD650_SDA_IN ) dat++;                /* 读入1 bit值 */
+ 183   2                      FD650_SCL_CLR;                                  /* 设置SCL为低电平 */
+ 184   2                      FD650_DELAY_LOW;                        
+ 185   2              }
+ 186   1         //////发送ACK位///// 
+ 187   1        if(MSACK==0)             /* 发送ACK应答位*/
+ 188   1          FD650_SDA_CLR;
+ 189   1        else FD650_SDA_SET;   
+ 190   1              FD650_SDA_D_OUT;             /* 设置SDA为输出方向 */
+ 191   1              FD650_SCL_SET;                           /* 设置SCL为高电平 */
+ 192   1              FD650_DELAY_HIGH;                        /* SCL 时钟高电平时间：*/
+ 193   1              FD650_SCL_CLR;                           /* 设置SCL为低电平 */
+ 194   1              FD650_DELAY_LOW;                           
+ 195   1              return dat;                                                      /* 返回接收到的数据 */
+ 196   1      }
+ 197          /* @} FD650_COMMUNICATION */
+ 198          /** @addtogroup  FD650_API_FUNTION  应用函数
+ 199            @{
+ 200          */
+ 201          /**
+ 202           *  @brief  向FD650的地址写入一字节的数据
+ 203           *  @param  CMD 发送一字节的命令
+ 204           *  @param  Data 发送一字节的数据 
+ 205           *  @return void
+ 206           *  @note   CMD是控制命令中的宏
+ 207           *  @par Example 
+ 208           *  @code
+ 209           *  FD650_Wr(FD650_7SEG_CMD);
+ 210           *  @endcode 
+ 211           */
+ 212           void FD650_Wr(INT8U CMD,INT8U Data)
+ 213          {
+ 214   1              FD650_Start();
+ 215   1              FD650_WrByte(CMD);
+ 216   1              FD650_WrByte(Data);
+ 217   1              FD650_Stop();
+ 218   1      }
+ 219          /**
+ 220           * @brief  读取按键码值 
+ 221           * @param  void
+ 222           * @retval  INT8U 
+ 223           * @return       返回按键值 
+ 224           * @note 具体返回值可以参考帮助手册
+ 225           * @note FD650支持组合键 
+ 226           */  
+ 227           INT8U FD650_RdSW(void)
+ 228          {
+ 229   1              INT8U KeyNUM=0;
+ 230   1              FD650_Start();
+ 231   1              FD650_WrByte(FD650_RdSw_CMD);
+ 232   1              KeyNUM=FD650_RdByte(FD650_NACK);        
+ 233   1              FD650_Stop();
+ 234   1              return KeyNUM;
+ 235   1      }
+ 236          
+ 237          /* @} FD650_API_FUNTION */
+ 238          
+ 239          /* @} FD650_API_FUNTION */
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 5   
+
+ 240          
+ 241          /** 
+ 242           * @ingroup FD650_SetCode
+ 243           * @brief   设置加密控制字
+ 244           * @param   ctrword FD650加密控制字,无符号8位1字节数
+ 245           * @return  返回初始值
+ 246           * @note   发送加密控制字给FD650
+ 247           */
+ 248          //获得全局变量OriginCode值 
+ 249           void FD650_WrEncrypt(INT8U CtrlWordTmp)
+ 250          {
+ 251   1              FD650_Start();
+ 252   1              FD650_WrByte( FD650_ENY_WRCMD );
+ 253   1              FD650_WrByte( CtrlWordTmp );
+ 254   1              FD650_Stop();
+ 255   1        CommCnt=0;
+ 256   1        CtrlWord=CtrlWordTmp;
+ 257   1        OriginCode=CHUZHI_GEN( 0,0,0,0,BIT_MASK(USERID_VERSION,5),BIT_MASK(USERID_VERSION,4),BIT_MASK(USERID_VER
+             -SION,3),BIT_MASK(USERID_VERSION,2),BIT_MASK(USERID_VERSION,1),BIT_MASK(USERID_VERSION,0),\
+ 258   1        XOR_MASK(CtrlWord,3,USERID_VERSION,1),0,XOR_MASK( XOR_MASK(CtrlWord,2,USERID_VERSION,2),0,USERID_VERSION
+             -,4 ),0,0,\
+ 259   1        BIT_MASK(CtrlWord,4),BIT_MASK(CtrlWord,3),BIT_MASK(CtrlWord,2),BIT_MASK(CtrlWord,1),1,BIT_MASK(CtrlWord,
+             -0) );
+ 260   1      }
+ 261          
+ 262          /** 
+ 263           * @ingroup FD650_Api
+ 264           * @brief   设置加密控制字
+ 265           * @param   ctrword FD650加密控制字,无符号8位1字节数
+ 266           * @return  无
+ 267           * @note   发送加密控制字给FD650
+ 268           */
+ 269           static INT8U FD650_RdEncrypt( void )
+ 270          {
+ 271   1              INT8U CodeTemp;
+ 272   1        FD650_Start();
+ 273   1              FD650_WrByte(FD650_ENY_RDCMD);
+ 274   1              CodeTemp=FD650_RdByte(1);
+ 275   1              FD650_Stop();
+ 276   1              CodeTemp=CodeTemp&0x3F;
+ 277   1        return CodeTemp;
+ 278   1      }
+ 279          /** 
+ 280           * @ingroup FD650_Api
+ 281           * @brief   加密算法
+ 282           * @param   
+ 283           * @return  算术值
+ 284           * @note   得到返回的算术值
+ 285           */
+ 286           #include "stdio.h"
+ 287           BOOLEAN FD650_EncryptVerify( void )
+ 288          {
+ 289   1        INT32U sht0 ,polytemp,i;
+ 290   1        INT8U CtrlWordTmp=0,TrueValue=0,CalValue=0;   
+ 291   1        TrueValue=FD650_RdEncrypt();
+ 292   1      //      printf("TrueValue=0X%02BX\r\n",TrueValue); 
+ 293   1      //      printf("CommCnt=0X%08lX\r\n",CommCnt); 
+ 294   1         for(i=0;i<CommCnt;i++)
+ 295   1              {
+ 296   2          polytemp=OriginCode;
+ 297   2          sht0=XOR_MASK(polytemp,20,polytemp,3) ;
+ 298   2          sht0=XOR_MASK(sht0,0 ,polytemp,0 ) ;
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 6   
+
+ 299   2          if( sht0 == 0x00000001 )
+ 300   2          {OriginCode = OriginCode*2+1;}
+ 301   2      
+ 302   2      
+ 303   2          else
+ 304   2          {OriginCode = OriginCode*2;}
+ 305   2              }
+ 306   1              CommCnt = 0;  
+ 307   1              polytemp=OriginCode;
+ 308   1        CtrlWordTmp=(CtrlWord >>5)&0x07;  
+ 309   1        switch (CtrlWordTmp)
+ 310   1        {
+ 311   2          case 0:
+ 312   2                {
+ 313   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,13,polytemp,11), BIT_MASK(polytemp,9), BIT_MASK(polytemp
+             -,10), XOR_MASK(polytemp,18,polytemp,3), BIT_MASK(polytemp,2), BIT_MASK(polytemp,1));
+ 314   3                  break;
+ 315   3                }
+ 316   2          case 1:{
+ 317   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,15,polytemp,13), BIT_MASK(polytemp,8), BIT_MASK(polytemp
+             -,17), XOR_MASK(polytemp,12,polytemp,5), BIT_MASK(polytemp,3), BIT_MASK(polytemp,2));
+ 318   3                  break;
+ 319   3                }
+ 320   2                
+ 321   2          case 2:{
+ 322   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,17,polytemp,15), BIT_MASK(polytemp,8), BIT_MASK(polytemp
+             -,14), XOR_MASK(polytemp,16,polytemp,6), BIT_MASK(polytemp,2), BIT_MASK(polytemp,1));
+ 323   3                  break;
+ 324   3                }         
+ 325   2          case 3:{
+ 326   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,19,polytemp,16), BIT_MASK(polytemp,4), BIT_MASK(polytemp
+             -,15), XOR_MASK(polytemp,13,polytemp,4), BIT_MASK(polytemp,3), BIT_MASK(polytemp,2));
+ 327   3                  break;
+ 328   3                  }
+ 329   2          case 4:{
+ 330   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,20,polytemp,18), BIT_MASK(polytemp,9), BIT_MASK(polytemp
+             -,11), XOR_MASK(polytemp,15,polytemp,7), BIT_MASK(polytemp,1), BIT_MASK(polytemp,0));
+ 331   3                  break;
+ 332   3                }        
+ 333   2          case 5:{
+ 334   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,18,polytemp,15), BIT_MASK(polytemp,9), BIT_MASK(polytemp
+             -,14), XOR_MASK(polytemp,10,polytemp,8), BIT_MASK(polytemp,2), BIT_MASK(polytemp,1));
+ 335   3                  break;
+ 336   3                }
+ 337   2          case 6:{
+ 338   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,16,polytemp,14), BIT_MASK(polytemp,7), BIT_MASK(polytemp
+             -,16), XOR_MASK(polytemp,13,polytemp,9), BIT_MASK(polytemp,5), BIT_MASK(polytemp,4));
+ 339   3                  break;
+ 340   3                }        
+ 341   2          case 7:{
+ 342   3                  CalValue= SPLIT_GEN(XOR_MASK(polytemp,13,polytemp,12), BIT_MASK(polytemp,6), BIT_MASK(polytemp
+             -,19), XOR_MASK(polytemp,15,polytemp,6), BIT_MASK(polytemp,4), BIT_MASK(polytemp,3));
+ 343   3                  break;
+ 344   3                }
+ 345   2          default: {
+ 346   3            break;}
+ 347   2        } 
+ 348   1           printf("CalValue=0X%02BX\r\n",CalValue); 
+ 349   1           printf("TrueValue=0X%02BX\r\n",TrueValue);  
+ 350   1        if(CalValue==TrueValue)
+ 351   1          return TRUE;
+ 352   1        else 
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 7   
+
+ 353   1          return FALSE;
+ 354   1        if(CalValue!=TrueValue)
+ 355   1          return TRUE;
+ 356   1        else 
+ 357   1          return FALSE;
+ 358   1      }
+ 359          /* @} FD650_DRIVER */
+ 360          
+ 361          INT8U FD650_RdEncryptData(void)
+ 362          {
+ 363   1              INT8U KeyNUM=0;
+ 364   1              FD650_Start();
+ 365   1              FD650_WrByte(0x4d);
+ 366   1              KeyNUM=FD650_RdByte(FD650_NACK);
+ 367   1              FD650_Stop();
+ 368   1              return KeyNUM;
+ 369   1      }
+ 370          #define NUM 40
+ 371          void FD650_EncryptCnt(void)
+ 372          {
+ 373   1              INT32U cnt = 0;
+ 374   1              INT8U str[NUM] = {0};
+ 375   1              INT32U i = 0;
+ 376   1              INT8U j = 0;
+ 377   1              for(j = 0; j < 255; j++)
+ 378   1              {
+ 379   2                      FD650_Wr(0x4a, j);
+ 380   2                      for(i = 0; i < NUM; i++)
+ 381   2                      {
+ 382   3                              str[i] = FD650_RdEncryptData();
+ 383   3                              printf("%02bu,",str[i]);
+ 384   3                      }
+ 385   2                      printf("\n");
+ 386   2                      while(1)
+ 387   2                      {
+ 388   3                              for(i = 0; i < NUM; i++)
+ 389   3                              {
+ 390   4                                      cnt ++;
+ 391   4                                      if(FD650_RdEncryptData() != str[i])
+ 392   4                                      {
+ 393   5                                              break;
+ 394   5                                      }
+ 395   4                              }
+ 396   3                              if(i == NUM)
+ 397   3                              {
+ 398   4                                      printf("j = %02bu , cnt = %lu\n",j, cnt);
+ 399   4                                      cnt = 0;
+ 400   4                                      break;
+ 401   4                              }
+ 402   3                              if(cnt > 200000)
+ 403   3                              {
+ 404   4                                      printf("j = %02bu , cnt > %lu\n",j, cnt);
+ 405   4                                      cnt = 0;
+ 406   4                                      break;                          
+ 407   4                              }
+ 408   3                      }
+ 409   2              }
+ 410   1      }
+ 411          
+ 412          /******************* (C) COPYRIGHT 2013 FDHISI *****END OF FILE****/
+
+
+C51 COMPILER V9.00   FD650LIB                                                              12/05/2016 11:00:24 PAGE 8   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   4067    ----
+   CONSTANT SIZE    =    134    ----
+   XDATA SIZE       =      9      76
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

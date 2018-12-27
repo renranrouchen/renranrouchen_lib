@@ -1,0 +1,12 @@
+".\Output\STARTUP.obj",
+".\Output\uart.obj",
+".\Output\config.obj",
+".\Output\ds1302.obj",
+".\Output\delay.obj",
+".\Output\FD612Drv_double.obj",
+".\Output\FD612Drv_demo.obj",
+".\Output\FD616.obj",
+".\Output\main.obj",
+".\Output\usr.obj" 
+TO ".\Output\pro" 
+PRINT(".\list\pro.m51") RAMSIZE(256) 

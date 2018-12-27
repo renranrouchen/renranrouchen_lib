@@ -1,0 +1,49 @@
+/********************************** (C) COPYRIGHT *******************************
+* File Name          : PWM.C
+* Author             : FDHISI
+* Version            : V1.0
+* Date               : 2017/01/20
+* Description        : FD814 PWM中断使能和中断处理               				   
+*******************************************************************************/
+
+#include "FD814.H"                                                 
+#include "Debug.H"
+#include "PWM.H"
+#include "stdio.h"
+
+#pragma  NOAREGS
+
+#if PWM_INTERRUPT
+/*******************************************************************************
+* Function Name  : PWMInterruptEnable()
+* Description    : PWM中断使能
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void  PWMInterruptEnable()
+{
+    PWM_CTRL |= bPWM_IF_END | bPWM_IE_END;                                      //清除PWM中断，使能PWM中断
+    IE_PWMX = 1;	
+}
+
+/*******************************************************************************
+* Function Name  : PWMInterrupt(void)
+* Description    : PWM中断服务程序   
+*******************************************************************************/
+void	PWMInterrupt( void ) interrupt INT_NO_PWMX using 1                      //PWM1&2中断服务程序,使用寄存器组1
+{
+    PWM_CTRL |= bPWM_IF_END; 
+                                                 //清除PWM中断
+				mDelaymS(500);
+				
+        SetPWM1Dat(i);
+        SetPWM2Dat(i);	
+				i = i - 20 ;
+				if(i < 20)
+					i =255 ;
+   
+//     printf("PWM_CTRL  %02X\n",(UINT16)PWM_CTRL);                           //开启可以用于查看是否进入中断	
+}
+#endif
+

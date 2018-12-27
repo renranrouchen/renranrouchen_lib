@@ -1,0 +1,316 @@
+C51 COMPILER V9.52.0.0   DEBUG                                                             07/10/2018 17:33:52 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE DEBUG
+OBJECT MODULE PLACED IN .\Output\Debug.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE StdDriver\src\Debug.C LARGE BROWSE INCDIR(.\StdDriver\inc;.\App) DEBUG O
+                    -BJECTEXTEND PRINT(.\List\Debug.lst) TABS(2) OBJECT(.\Output\Debug.obj)
+
+line level    source
+
+   1          /********************************** (C) COPYRIGHT *******************************
+   2          * File Name          : Debug.C
+   3          * Author             : FDHISI
+   4          * Version            : V1.0
+   5          * Date               : 2017/01/20
+   6          * Description        : FD814 DEBUG Interface
+   7                               FD814Ö÷ÆµÐÞ¸Ä¡¢ÑÓÊ±º¯Êý¶¨Òå
+   8                               ´®¿Ú0ºÍ´®¿Ú1³õÊ¼»¯
+   9                               ´®¿Ú0ºÍ´®¿Ú1µÄÊÕ·¢×Óº¯Êý
+  10                               ¿´ÃÅ¹·³õÊ¼»¯                    
+  11          *******************************************************************************/
+  12          
+  13          #include "FD814.H"
+  14          #include "Debug.H"
+  15          
+  16          /*******************************************************************************
+  17          * Function Name  : CfgFsys( )
+  18          * Description    : FD814Ê±ÖÓÑ¡ÔñºÍÅäÖÃº¯Êý,Ä¬ÈÏÊ¹ÓÃFsys 6MHz£¬FREQ_SYS¿ÉÒÔÍ¨¹ý
+  19                             CLOCK_CFGÅäÖÃµÃµ½£¬¹«Ê½ÈçÏÂ£º
+  20                             Fsys = (Fosc * 4/(CLOCK_CFG & MASK_SYS_CK_SEL);¾ßÌåÊ±ÖÓÐèÒª×Ô¼ºÅäÖÃ 
+  21          * Input          : None
+  22          * Output         : None
+  23          * Return         : None
+  24          *******************************************************************************/ 
+  25          void  CfgFsys( )  
+  26          {
+  27   1      //    SAFE_MOD = 0x55;
+  28   1      //    SAFE_MOD = 0xAA;
+  29   1      //     CLOCK_CFG |= bOSC_EN_XT;                          //Ê¹ÄÜÍâ²¿¾§Õñ
+  30   1      //     CLOCK_CFG &= ~bOSC_EN_INT;                        //¹Ø±ÕÄÚ²¿¾§Õñ    
+  31   1          SAFE_MOD = 0x55;
+  32   1          SAFE_MOD = 0xAA;
+  33   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x07;  // 32MHz 
+  34   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x06;  // 24MHz 
+  35   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x05;  // 16MHz 
+  36   1          CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x04;  // 12MHz
+  37   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x03;  // 6MHz  
+  38   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x02;  // 3MHz  
+  39   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x01;  // 750KHz  
+  40   1      //    CLOCK_CFG = CLOCK_CFG & ~ MASK_SYS_CK_SEL | 0x00;  // 187.5MHz    
+  41   1          SAFE_MOD = 0x00;
+  42   1      }
+  43          
+  44          /*******************************************************************************
+  45          * Function Name  : mDelayus(UNIT16 n)
+  46          * Description    : usÑÓÊ±º¯Êý
+  47          * Input          : UNIT16 n
+  48          * Output         : None
+  49          * Return         : None
+  50          *******************************************************************************/ 
+  51          void  mDelayuS( UINT16 n )  // ÒÔuSÎªµ¥Î»ÑÓÊ±
+  52          {
+  53   1      #ifdef  FREQ_SYS
+  54   1      #if   FREQ_SYS <= 6000000
+C51 COMPILER V9.52.0.0   DEBUG                                                             07/10/2018 17:33:52 PAGE 2   
+
+                  n >>= 2;
+              #endif
+  57   1      #if   FREQ_SYS <= 3000000
+                  n >>= 2;
+              #endif
+  60   1      #if   FREQ_SYS <= 750000
+                  n >>= 4;
+              #endif
+  63   1      #endif
+  64   1        while ( n ) {  // total = 12~13 Fsys cycles, 1uS @Fsys=12MHz
+  65   2          ++ SAFE_MOD;  // 2 Fsys cycles, for higher Fsys, add operation here
+  66   2      #ifdef  FREQ_SYS
+  67   2      #if   FREQ_SYS >= 14000000
+                  ++ SAFE_MOD;
+              #endif
+  70   2      #if   FREQ_SYS >= 16000000
+                  ++ SAFE_MOD;
+              #endif
+  73   2      #if   FREQ_SYS >= 18000000
+                  ++ SAFE_MOD;
+              #endif
+  76   2      #if   FREQ_SYS >= 20000000
+                  ++ SAFE_MOD;
+              #endif
+  79   2      #if   FREQ_SYS >= 22000000
+                  ++ SAFE_MOD;
+              #endif
+  82   2      #if   FREQ_SYS >= 24000000
+                  ++ SAFE_MOD;
+              #endif
+  85   2      #if   FREQ_SYS >= 26000000
+                  ++ SAFE_MOD;
+              #endif
+  88   2      #if   FREQ_SYS >= 28000000
+                  ++ SAFE_MOD;
+              #endif
+  91   2      #if   FREQ_SYS >= 30000000
+                  ++ SAFE_MOD;
+              #endif
+  94   2      #if   FREQ_SYS >= 32000000
+                  ++ SAFE_MOD;
+              #endif
+  97   2      #endif
+  98   2          -- n;
+  99   2        }
+ 100   1      }
+ 101          
+ 102          /*******************************************************************************
+ 103          * Function Name  : mDelayms(UNIT16 n)
+ 104          * Description    : msÑÓÊ±º¯Êý
+ 105          * Input          : UNIT16 n
+ 106          * Output         : None
+ 107          * Return         : None
+ 108          *******************************************************************************/
+ 109          void  mDelaymS( UINT16 n )                                                  // ÒÔmSÎªµ¥Î»ÑÓÊ±
+ 110          {
+ 111   1        while ( n ) {
+ 112   2      #ifdef  DELAY_MS_HW
+                  while ( ( TKEY_CTRL & bTKC_IF ) == 0 );
+                  while ( TKEY_CTRL & bTKC_IF );
+              #else
+ 116   2          mDelayuS( 1000 );
+C51 COMPILER V9.52.0.0   DEBUG                                                             07/10/2018 17:33:52 PAGE 3   
+
+ 117   2      #endif
+ 118   2          -- n;
+ 119   2        }
+ 120   1      }                                         
+ 121          
+ 122          /*******************************************************************************
+ 123          * Function Name  : FD814UART0Alter()
+ 124          * Description    : FD814´®¿Ú0Òý½ÅÓ³Éä,´®¿ÚÓ³Éäµ½P0.2ºÍP0.3
+ 125          * Input          : None
+ 126          * Output         : None
+ 127          * Return         : None
+ 128          *******************************************************************************/
+ 129          //void FD814UART0Alter()
+ 130          //{
+ 131          //    PIN_FUNC |= bUART0_PIN_X;                                                  //´®¿ÚÓ³Éäµ½P1.2ºÍP1.3
+ 132          //}
+ 133          
+ 134          /*******************************************************************************
+ 135          * Function Name  : mInitSTDIO()
+ 136          * Description    : FD814´®¿Ú0³õÊ¼»¯,Ä¬ÈÏÊ¹ÓÃT1×÷UART0µÄ²¨ÌØÂÊ·¢ÉúÆ÷,Ò²¿ÉÒÔÊ¹ÓÃT2
+ 137                             ×÷Îª²¨ÌØÂÊ·¢ÉúÆ÷
+ 138          * Input          : None
+ 139          * Output         : None
+ 140          * Return         : None
+ 141          *******************************************************************************/
+ 142          #if 0
+              void  mInitSTDIO( )
+              {
+                  UINT32 x;
+                  UINT8 x2; 
+              
+                  SM0 = 0;
+                  SM1 = 1;
+                  SM2 = 0;                                                                   //´®¿Ú0Ê¹ÓÃÄ£Ê½1
+                                                                                             //Ê¹ÓÃTimer1×÷Îª²¨ÌØÂÊ·¢ÉúÆ
+             -÷
+                  RCLK = 0;                                                                  //UART0½ÓÊÕÊ±ÖÓ
+                  TCLK = 0;                                                                  //UART0·¢ËÍÊ±ÖÓ
+                  PCON |= SMOD;
+                  x = 10 * FREQ_SYS / UART0_BUAD / 16;                                       //Èç¹û¸ü¸ÄÖ÷Æµ£¬×¢ÒâxµÄÖµ²»
+             -ÒªÒç³ö                            
+                  x2 = x % 10;
+                  x /= 10;
+                  if ( x2 >= 5 ) x ++;                                                       //ËÄÉáÎåÈë
+              
+                  TMOD = TMOD & ~ bT1_GATE & ~ bT1_CT & ~ MASK_T1_MOD | bT1_M1;              //0X20£¬Timer1×÷Îª8Î»×Ô¶¯ÖØ
+             -ÔØ¶¨Ê±Æ÷
+                  T2MOD = T2MOD | bTMR_CLK | bT1_CLK;                                        //Timer1Ê±ÖÓÑ¡Ôñ
+                  TH1 = 0-x;                                                                 //12MHz¾§Õñ,buad/12ÎªÊµ¼ÊÐè
+             -ÉèÖÃ²¨ÌØÂÊ
+                  TR1 = 1;                                                                   //Æô¶¯¶¨Ê±Æ÷1
+                  TI = 1;
+                  REN = 1;  
+                                                                               //´®¿Ú0½ÓÊÕÊ¹ÄÜ
+              
+              //      ES = 1;  //¿ªÆô´®¿ÚÖÐ¶Ï
+              //      EA = 1;
+              }
+              #endif
+ 172          /*******************************************************************************
+ 173          * Function Name  : FD814UART0RcvByte()
+ 174          * Description    : FD814UART0½ÓÊÕÒ»¸ö×Ö½Ú
+C51 COMPILER V9.52.0.0   DEBUG                                                             07/10/2018 17:33:52 PAGE 4   
+
+ 175          * Input          : None
+ 176          * Output         : None
+ 177          * Return         : SBUF
+ 178          *******************************************************************************/
+ 179          //UINT8  FD814UART0RcvByte( )
+ 180          //{
+ 181          //    while(RI == 0);                                                            //²éÑ¯½ÓÊÕ£¬ÖÐ¶Ï·½Ê½¿É²»Ó
+             -Ã
+ 182          //    RI = 0;
+ 183          //    return SBUF;
+ 184          //}
+ 185          
+ 186          /*******************************************************************************
+ 187          * Function Name  : FD814UART0SendByte(UINT8 SendDat)
+ 188          * Description    : FD814UART0·¢ËÍÒ»¸ö×Ö½Ú
+ 189          * Input          : UINT8 SendDat£»Òª·¢ËÍµÄÊý¾Ý
+ 190          * Output         : None
+ 191          * Return         : None
+ 192          *******************************************************************************/
+ 193          //void FD814UART0SendByte(UINT8 SendDat)
+ 194          //{
+ 195          //  SBUF = SendDat;                                                              //²éÑ¯·¢ËÍ£¬ÖÐ¶Ï·½Ê½¿É²»ÓÃ
+             -ÏÂÃæ2ÌõÓï¾ä,µ«·¢ËÍÇ°ÐèTI=0
+ 196          //  while(TI ==0);
+ 197          //  TI = 0;
+ 198          //}
+ 199          
+ 200          /*******************************************************************************
+ 201          * Function Name  : UART1Setup()
+ 202          * Description    : FD814´®¿Ú1³õÊ¼»¯
+ 203          * Input          : None
+ 204          * Output         : None
+ 205          * Return         : None
+ 206          *******************************************************************************/
+ 207          //void  UART1Setup( )
+ 208          //{
+ 209          //   U1SM0 = 0;                                                                   //UART1Ñ¡Ôñ8Î»Êý¾ÝÎ»
+ 210          //   U1SMOD = 1;                                                                  //¿ìËÙÄ£Ê½
+ 211          //   U1REN = 1;                                                                   //Ê¹ÄÜ½ÓÊÕ
+ 212          //   SBAUD1 = 0 - FREQ_SYS/16/UART1_BUAD;
+ 213          //}
+ 214          
+ 215          /*******************************************************************************
+ 216          * Function Name  : FD814UART1RcvByte()
+ 217          * Description    : FD814UART1½ÓÊÕÒ»¸ö×Ö½Ú
+ 218          * Input          : None
+ 219          * Output         : None
+ 220          * Return         : SBUF
+ 221          *******************************************************************************/
+ 222          //UINT8  FD814UART1RcvByte( )
+ 223          //{
+ 224          //    while(U1RI == 0);                                                           //²éÑ¯½ÓÊÕ£¬ÖÐ¶Ï·½Ê½¿É²»
+             -ÓÃ
+ 225          //    U1RI = 0;
+ 226          //    return SBUF1;
+ 227          //}
+ 228          
+ 229          /*******************************************************************************
+ 230          * Function Name  : FD814UART1SendByte(UINT8 SendDat)
+ 231          * Description    : FD814UART1·¢ËÍÒ»¸ö×Ö½Ú
+ 232          * Input          : UINT8 SendDat£»Òª·¢ËÍµÄÊý¾Ý
+ 233          * Output         : None
+C51 COMPILER V9.52.0.0   DEBUG                                                             07/10/2018 17:33:52 PAGE 5   
+
+ 234          * Return         : None
+ 235          *******************************************************************************/
+ 236          //void FD814UART1SendByte(UINT8 SendDat)
+ 237          //{
+ 238          //  SBUF1 = SendDat;                                                             //²éÑ¯·¢ËÍ£¬ÖÐ¶Ï·½Ê½¿É²»ÓÃ
+             -ÏÂÃæ2ÌõÓï¾ä,µ«·¢ËÍÇ°ÐèTI=0
+ 239          //  while(U1TI ==0);
+ 240          //  U1TI = 1;
+ 241          //}
+ 242          
+ 243          /*******************************************************************************
+ 244          * Function Name  : FD814WDTModeSelect(UINT8 mode)
+ 245          * Description    : FD814¿´ÃÅ¹·Ä£Ê½Ñ¡Ôñ
+ 246          * Input          : UINT8 mode 
+ 247                             0  timer
+ 248                             1  watchDog
+ 249          * Output         : None
+ 250          * Return         : None
+ 251          *******************************************************************************/
+ 252          //void FD814WDTModeSelect(UINT8 mode)
+ 253          //{
+ 254          //   SAFE_MOD = 0x55;
+ 255          //   SAFE_MOD = 0xaa;                                                             //½øÈë°²È«Ä£Ê½
+ 256          //   if(mode){
+ 257          //     GLOBAL_CFG |= bWDOG_EN;                                                    //Æô¶¯¿´ÃÅ¹·¸´Î»
+ 258          //   }
+ 259          //   else GLOBAL_CFG &= ~bWDOG_EN;                                              //Æô¶¯¿´ÃÅ¹·½ö½ö×÷Îª¶¨Ê±Æ÷
+ 260          //   SAFE_MOD = 0x00;                                                             //ÍË³ö°²È«Ä£Ê½
+ 261          //   WDOG_COUNT = 0;                                                              //¿´ÃÅ¹·¸³³õÖµ
+ 262          //}
+ 263          
+ 264          /*******************************************************************************
+ 265          * Function Name  : FD814WDTFeed(UINT8 tim)
+ 266          * Description    : FD814¿´ÃÅ¹·¶¨Ê±Ê±¼äÉèÖÃ
+ 267          * Input          : UINT8 tim ¿´ÃÅ¹·¸´Î»Ê±¼äÉèÖÃ
+ 268                             00H(6MHz)=2.8s
+ 269                             80H(6MHz)=1.4s
+ 270          * Output         : None
+ 271          * Return         : None
+ 272          *******************************************************************************/
+ 273          //void FD814WDTFeed(UINT8 tim)
+ 274          //{
+ 275          //   WDOG_COUNT = tim;                                                             //¿´ÃÅ¹·¼ÆÊýÆ÷¸³Öµ 
+ 276          //}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     55    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

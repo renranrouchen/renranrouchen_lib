@@ -1,0 +1,242 @@
+C51 COMPILER V9.52.0.0   CONFIG                                                            01/31/2018 17:38:08 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE CONFIG
+OBJECT MODULE PLACED IN .\Output\config.obj
+COMPILER INVOKED BY: E:\Keil_v5\C51\BIN\C51.EXE App\config.c LARGE BROWSE INCDIR(.\StdDriver\inc;.\App) DEBUG OBJECTEXTE
+                    -ND PRINT(.\List\config.lst) TABS(2) OBJECT(.\Output\config.obj)
+
+line level    source
+
+   1          #include "config.h"
+   2          #include "usr.h"
+   3          
+   4          extern UINT8 hour_12_24_flag,hour_pm_flag;
+   5          
+   6          void gpio_init(void){
+   7   1          PIN_FUNC  &=   ~ (1 << 7) ; //¸ÃÎ»Îª1ÔòP36/P37ÓÃÓÚUDP/UDM
+   8   1        
+   9   1          Port1Cfg(3,4);   //DS1302 Òý½Å³õÊ¼»¯                                                                //I/O
+             -¿ªÂ©ÊäÈëÊä³ö
+  10   1          Port1Cfg(3,5);
+  11   1          Port1Cfg(3,6);
+  12   1      
+  13   1          Port3Cfg(3,0);   //FD612Òý½Å³õÊ¼»¯
+  14   1          Port3Cfg(3,1);
+  15   1        
+  16   1          Port3Cfg(0,2);   //Éù¿ØÒý½Å
+  17   1        
+  18   1          Port3Cfg(3,4);    //·äÃùÆ÷Òý½Å
+  19   1          buzzer=0;
+  20   1            
+  21   1          Port1Cfg(3,7);    //°´¼üÒý½Å
+  22   1          Port3Cfg(3,7);
+  23   1          Port3Cfg(3,3);  
+  24   1        
+  25   1      }
+  26          
+  27          void ADC0_INIT(UINT8 div){
+  28   1          ADC_CFG &= ~bADC_CLK | div;
+  29   1          ADC_CFG |= bADC_EN;                                                        //ADCµçÔ´Ê¹ÄÜ
+  30   1      
+  31   1        
+  32   1        
+  33   1      //  ADC_START = 1;  
+  34   1      //  while(ADC_START);                                                      //ADC_START±äÎª0Ê±£¬±íÊ¾²ÉÑùÍê³
+             -É
+  35   1      //  ADC_ConvertedValueLocal =(float) ADC_DATA/255*5; // ¶ÁÈ¡×ª»»µÄADÖµ  
+  36   1      }
+  37          
+  38          void DS1302_INIT(void)
+  39          {
+  40   1          UINT8 ds1320_state=0,rom_value;
+  41   1        Write_addr_byte_ds1302(0x90,0xab);
+  42   1        rom_value=Read_addr_byte_ds1302(rom1_r_addr);
+  43   1         if(rom_value!=0xaa)
+  44   1          {
+  45   2            InitDS1302( );
+  46   2            Write_addr_byte_ds1302(rom1_w_addr,0xaa);
+  47   2            
+  48   2      
+  49   2          }
+  50   1      //      ResetDS1302();
+  51   1      //      WriteByteDS1302(0x8e);                          //Ð´±£»¤¿ØÖÆ¼Ä´æÆ÷
+  52   1      //      WriteByteDS1302(0x0);                           //ÔÊÐíÐ´Èë
+C51 COMPILER V9.52.0.0   CONFIG                                                            01/31/2018 17:38:08 PAGE 2   
+
+  53   1      //      
+  54   1      //      ResetDS1302();
+  55   1      //      WriteByteDS1302(0x90);                          //Ð´ä¸Á÷³äµç¿ØÖÆ¼Ä´æÆ÷
+  56   1      //      WriteByteDS1302(0xab);  
+  57   1            ds1320_state=Read_addr_byte_ds1302(hour_r_addr);
+  58   1      
+  59   1          if(ds1320_state&0x80)
+  60   1          {
+  61   2            hour_12_24_flag=1;
+  62   2          }
+  63   1          if(hour_12_24_flag==1)
+  64   1          {
+  65   2            if(ds1320_state&0x20)
+  66   2            hour_pm_flag=1;
+  67   2          }
+  68   1      }
+  69          void time0_init(void){
+  70   1          BC(TMOD,3);   //bT0_GATEÖÃ0
+  71   1          BC(TMOD,2);   //bT0_CTÖÃ0¹¤×÷ÓÚ¶¨Ê±·½Ê½
+  72   1          
+  73   1          BC(TMOD,1);   //bTn_M1=0,bTn_M0=1,Ä£Ê½1
+  74   1          BS(TMOD,0);
+  75   1          BC(T2MOD,4);
+  76   1      //    TH0 =0X3C;
+  77   1      //    TL0 =0XB0;
+  78   1          TH0=0XFf;
+  79   1          TL0=0X90;
+  80   1          
+  81   1          ET0 =1;
+  82   1          EA =1;
+  83   1        //  TR0 =1;
+  84   1      }
+  85          
+  86          void time1_init(void){
+  87   1          BC(TMOD,7);   //bT1_GATEÖÃ0
+  88   1          BC(TMOD,6);   //bT1_CTÖÃ0¹¤×÷ÓÚ¶¨Ê±·½Ê½
+  89   1          
+  90   1          BC(TMOD,5);   //bTn_M1=0,bTn_M0=1,Ä£Ê½1
+  91   1          BS(TMOD,4);
+  92   1          BC(T2MOD,5);
+  93   1          TH1 =0X3C;
+  94   1          TL1 =0XB0;
+  95   1          ET1 =1;
+  96   1          EA =1;
+  97   1          TR1 =1;
+  98   1      }
+  99          #if 0
+              void time2_init(void)
+              {
+                T2MOD &= ~(bTMR_CLK | bT2_CLK);C_T2 = 0;
+                RCLK = 0;TCLK = 0;CP_RL2 = 0;
+                 TL2 =  0xff;                                               //16Î»×Ô¶¯ÖØÔØ¶¨Ê±Æ÷
+                  TH2 =  0xff;
+                  ET2 = 1; 
+              //  TR2=1;
+              }
+              #endif
+ 110          
+ 111          #if 0
+              void PWM_init(void)
+              {
+                  P3_MOD_OC &= ~( bPWM2);                                             //ÉèÖÃPWMÒý½ÅÎªÍÆÍìÊä³ö
+C51 COMPILER V9.52.0.0   CONFIG                                                            01/31/2018 17:38:08 PAGE 3   
+
+                  P3_DIR_PU |=  bPWM2;
+                  PWM_CK_SE=4;
+                PWM_CTRL |= bPWM_CLR_ALL;
+                PWM_CTRL &= ~bPWM_CLR_ALL;
+                //PWM_CTRL |= bPWM2_OUT_EN;
+                PWM_CTRL |= bPWM2_POLAR;
+                PWM_DATA2 = 200;
+              }
+              #endif
+ 124          
+ 125          /*******************************************************************************
+ 126          * Function Name  : Port1Cfg()
+ 127          * Description    : ¶Ë¿Ú1ÅäÖÃ
+ 128          * Input          : Mode  0 = ¸¡¿ÕÊäÈë£¬ÎÞÉÏÀ­
+ 129                                   1 = ÍÆÍìÊäÈëÊä³ö
+ 130                                   2 = ¿ªÂ©ÊäÈëÊä³ö£¬ÎÞÉÏÀ­
+ 131                                   3 = Àà51Ä£Ê½£¬¿ªÂ©ÊäÈëÊä³ö£¬ÓÐÉÏÀ­£¬ÄÚ²¿µçÂ·¿ÉÒÔ¼ÓËÙÓÉµÍµ½¸ßµÄµçÆ½ÅÀÉý   
+ 132                             ,UINT8 Pin (0-7)                      
+ 133          * Output         : None
+ 134          * Return         : None
+ 135          *******************************************************************************/
+ 136          void Port1Cfg(UINT8 Mode,UINT8 Pin)
+ 137          {
+ 138   1        switch(Mode){
+ 139   2          case 0:
+ 140   2            P1_MOD_OC = P1_MOD_OC & ~(1<<Pin);
+ 141   2            P1_DIR_PU = P1_DIR_PU & ~(1<<Pin);  
+ 142   2            break;
+ 143   2          case 1:
+ 144   2            P1_MOD_OC = P1_MOD_OC & ~(1<<Pin);
+ 145   2            P1_DIR_PU = P1_DIR_PU | (1<<Pin);       
+ 146   2            break;    
+ 147   2          case 2:
+ 148   2            P1_MOD_OC = P1_MOD_OC | (1<<Pin);
+ 149   2            P1_DIR_PU = P1_DIR_PU & ~(1<<Pin);        
+ 150   2            break;    
+ 151   2          case 3:
+ 152   2            P1_MOD_OC = P1_MOD_OC | (1<<Pin);
+ 153   2            P1_DIR_PU = P1_DIR_PU | (1<<Pin);     
+ 154   2            break;
+ 155   2          default:
+ 156   2            break;      
+ 157   2        }
+ 158   1      }
+ 159          
+ 160          /*******************************************************************************
+ 161          * Function Name  : Port3Cfg()
+ 162          * Description    : ¶Ë¿Ú3ÅäÖÃ
+ 163          * Input          : Mode  0 = ¸¡¿ÕÊäÈë£¬ÎÞÉÏÀ­
+ 164                                   1 = ÍÆÍìÊäÈëÊä³ö
+ 165                                   2 = ¿ªÂ©ÊäÈëÊä³ö£¬ÎÞÉÏÀ­
+ 166                                   3 = Àà51Ä£Ê½£¬¿ªÂ©ÊäÈëÊä³ö£¬ÓÐÉÏÀ­£¬ÄÚ²¿µçÂ·¿ÉÒÔ¼ÓËÙÓÉµÍµ½¸ßµÄµçÆ½ÅÀÉý   
+ 167                             ,UINT8 Pin (0-7)                      
+ 168          * Output         : None
+ 169          * Return         : None
+ 170          *******************************************************************************/
+ 171          
+ 172          void Port3Cfg(UINT8 Mode,UINT8 Pin)
+ 173          {
+ 174   1        switch(Mode){
+ 175   2          case 0:
+ 176   2            P3_MOD_OC = P3_MOD_OC & ~(1<<Pin);
+C51 COMPILER V9.52.0.0   CONFIG                                                            01/31/2018 17:38:08 PAGE 4   
+
+ 177   2            P3_DIR_PU = P3_DIR_PU & ~(1<<Pin);  
+ 178   2            break;
+ 179   2          case 1:
+ 180   2            P3_MOD_OC = P3_MOD_OC & ~(1<<Pin);
+ 181   2            P3_DIR_PU = P3_DIR_PU | (1<<Pin);       
+ 182   2            break;    
+ 183   2          case 2:
+ 184   2            P3_MOD_OC = P3_MOD_OC | (1<<Pin);
+ 185   2            P3_DIR_PU = P3_DIR_PU & ~(1<<Pin);        
+ 186   2            break;    
+ 187   2          case 3:
+ 188   2            P3_MOD_OC = P3_MOD_OC | (1<<Pin);
+ 189   2            P3_DIR_PU = P3_DIR_PU | (1<<Pin);     
+ 190   2            break;
+ 191   2          default:
+ 192   2            break;      
+ 193   2        }
+ 194   1      }
+ 195          
+ 196          
+ 197          void display_init_first(void)
+ 198          {
+ 199   1        UINT8 rom2_value;
+ 200   1        rom2_value=Read_addr_byte_ds1302(rom2_r_addr);
+ 201   1      
+ 202   1          if(rom2_value!=0xaa)
+ 203   1          { 
+ 204   2            FD612_loop( );
+ 205   2            FD612_Init( );
+ 206   2            Write_addr_byte_ds1302(rom2_w_addr,0xaa);     
+ 207   2      
+ 208   2            
+ 209   2          } 
+ 210   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    404    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

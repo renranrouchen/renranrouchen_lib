@@ -1,0 +1,328 @@
+Module list:
+------------
+F628.o:
+    .debug_line          offset:0     size:295 
+    .debug_info          offset:0     size:2f3 
+    .debug_abbrev        offset:0     size:46  
+    .debug_ranges        offset:0     size:d8  
+    .debug_aranges       offset:0     size:e8  
+    uninit               offset:40000040 size:2   
+    uninit               offset:40000042 size:2   
+    uninit               offset:40000044 size:2   
+    uninit               offset:40000046 size:2   
+    uninit               offset:40000048 size:2   
+    uninit               offset:4000004a size:2   
+    uninit               offset:4000004c size:2   
+    uninit               offset:4000004e size:2   
+    uninit               offset:40000050 size:2   
+    uninit               offset:40000052 size:2   
+    uninit               offset:40000054 size:2   
+    uninit               offset:40000056 size:2   
+    uninit               offset:40000058 size:2   
+    uninit               offset:4000005a size:2   
+    uninit               offset:4000005c size:2   
+    idata                offset:40000066 size:e   
+    code                 offset:1a    size:4e  
+    code                 offset:68    size:c   
+    code                 offset:74    size:32  
+    code                 offset:a6    size:c   
+    code                 offset:b2    size:6   
+    code                 offset:b8    size:e   
+    code                 offset:c6    size:e   
+    code                 offset:d4    size:a   
+    code                 offset:de    size:22  
+    code                 offset:100   size:2e  
+
+config.o:
+    .debug_line          offset:295   size:aa  
+    .debug_info          offset:2f3   size:9d  
+    .debug_abbrev        offset:46    size:33  
+    .debug_ranges        offset:d8    size:18  
+    .debug_aranges       offset:e8    size:28  
+    uninit               offset:4000005e size:2   
+    code                 offset:12e   size:48  
+
+main.o:
+    .debug_line          offset:33f   size:299 
+    .debug_info          offset:390   size:166 
+    .debug_abbrev        offset:79    size:46  
+    .debug_ranges        offset:f0    size:60  
+    .debug_aranges       offset:110   size:70  
+    uninit               offset:40000020 size:20  
+    uninit               offset:40000060 size:2   
+    uninit               offset:40000062 size:2   
+    uninit               offset:40000064 size:2   
+    idata                offset:40000074 size:2   
+    idata                offset:40000076 size:2   
+    idata                offset:40000078 size:2   
+    .text                offset:0     size:2   
+    code                 offset:176   size:48  
+    code                 offset:1be   size:172 
+    code                 offset:330   size:88  
+
+NY8A051D.a:
+    .text                offset:40000000 size:2   
+    .text                offset:40000002 size:2   
+    .text                offset:40000004 size:2   
+    .text                offset:40000006 size:2   
+    .text                offset:40000008 size:2   
+    .text                offset:4000000a size:2   
+    .text                offset:4000000c size:2   
+    .text                offset:4000000e size:2   
+    .text                offset:40000010 size:2   
+    .text                offset:40000012 size:2   
+    .text                offset:40000014 size:2   
+    .text                offset:40000016 size:2   
+    .text                offset:40000018 size:2   
+    .text                offset:4000001a size:2   
+    .text                offset:4000001c size:2   
+    .text                offset:4000001e size:2   
+    .text                offset:41000000 size:2   
+    .text                offset:4100000c size:2   
+    .text                offset:41000014 size:2   
+    .text                offset:41000018 size:2   
+    .text                offset:4100001e size:2   
+    .text                offset:42000000 size:2   
+    .text                offset:42000002 size:2   
+    .text                offset:42000004 size:2   
+    .text                offset:42000006 size:2   
+    .text                offset:42000008 size:2   
+    .text                offset:4200000a size:2   
+    .text                offset:4200000c size:2   
+    .text                offset:4200000e size:2   
+    .text                offset:42000010 size:2   
+    .text                offset:4200001e size:2   
+
+libsdcc_small.a:
+
+small.a:
+    startup              offset:2     size:18  
+    code                 offset:3b8   size:20  
+    code                 offset:3d8   size:12  
+
+cb_file:
+    cb_section           offset:800   size:20  
+
+
+Segment list:
+Name                  Start    Size
+-----------------------------------
+.text                000000  000002
+startup              000002  000018
+code                 00001a  00004e
+code                 000068  00000c
+code                 000074  000032
+code                 0000a6  00000c
+code                 0000b2  000006
+code                 0000b8  00000e
+code                 0000c6  00000e
+code                 0000d4  00000a
+code                 0000de  000022
+code                 000100  00002e
+code                 00012e  000048
+code                 000176  000048
+code                 0001be  000172
+code                 000330  000088
+code                 0003b8  000020
+code                 0003d8  000012
+_cinit               0003ea  00002a
+cb_section           000800  000020
+.text                40000000  000002
+.text                40000002  000002
+.text                40000004  000002
+.text                40000006  000002
+.text                40000008  000002
+.text                4000000a  000002
+.text                4000000c  000002
+.text                4000000e  000002
+.text                40000010  000002
+.text                40000012  000002
+.text                40000014  000002
+.text                40000016  000002
+.text                40000018  000002
+.text                4000001a  000002
+.text                4000001c  000002
+.text                4000001e  000002
+uninit               40000020  000020
+uninit               40000040  000002
+uninit               40000042  000002
+uninit               40000044  000002
+uninit               40000046  000002
+uninit               40000048  000002
+uninit               4000004a  000002
+uninit               4000004c  000002
+uninit               4000004e  000002
+uninit               40000050  000002
+uninit               40000052  000002
+uninit               40000054  000002
+uninit               40000056  000002
+uninit               40000058  000002
+uninit               4000005a  000002
+uninit               4000005c  000002
+uninit               4000005e  000002
+uninit               40000060  000002
+uninit               40000062  000002
+uninit               40000064  000002
+idata                40000066  00000e
+idata                40000074  000002
+idata                40000076  000002
+idata                40000078  000002
+.text                41000000  000002
+.text                4100000c  000002
+.text                41000014  000002
+.text                41000018  000002
+.text                4100001e  000002
+.text                42000000  000002
+.text                42000002  000002
+.text                42000004  000002
+.text                42000006  000002
+.text                42000008  000002
+.text                4200000a  000002
+.text                4200000c  000002
+.text                4200000e  000002
+.text                42000010  000002
+.text                4200001e  000002
+
+Symbol list by name:
+Name                       Value
+--------------------------------
+___cinit_load__           0003ea
+___cinit_run__            0003ea
+___cinit_size__           00002a
+___fs2schar               no used
+___fs2sint                no used
+___fs2slong               no used
+___fs2uchar               no used
+___fs2uint                no used
+___fs2ulong               no used
+___fsadd                  no used
+___fsdiv                  no used
+___fseq                   no used
+___fsgt                   no used
+___fslt                   no used
+___fsmul                  no used
+___fsneq                  no used
+___fssub                  no used
+___schar2fs               no used
+___sdcc_saved_fsr         no used
+___sdcc_saved_stk00       no used
+___sdcc_saved_stk01       no used
+___sdcc_saved_stk02       no used
+___sdcc_saved_stk03       no used
+___sdcc_saved_stk04       no used
+___sdcc_saved_stk05       no used
+___sdcc_saved_stk06       no used
+___sdcc_saved_stk07       no used
+___sdcc_saved_stk08       no used
+___sdcc_saved_stk09       no used
+___sdcc_saved_stk10       no used
+___sdcc_saved_stk11       no used
+___sdcc_saved_stk12       no used
+___sint2fs                no used
+___slong2fs               no used
+___uchar2fs               no used
+___uint2fs                no used
+___ulong2fs               no used
+__checksum                000414
+__codeptrget1             0003ce
+__divschar                no used
+__divsint                 no used
+__divslong                no used
+__divuchar                no used
+__divuint                 no used
+__divulong                no used
+__gptrget                 0003b8
+__gptrget1                0003b8
+__gptrget2                no used
+__gptrget3                no used
+__gptrget4                no used
+__gptrput                 0003d8
+__gptrput1                0003d8
+__gptrput2                no used
+__gptrput3                no used
+__gptrput4                no used
+__idata_total_size__      000014
+__modschar                no used
+__modsint                 no used
+__modslong                no used
+__moduchar                no used
+__moduint                 no used
+__modulong                no used
+__mulchar                 no used
+__mulint                  no used
+__mullong                 no used
+__reserved_sfr_0x0005     4000000a
+__reserved_sfr_0x0007     4000000e
+__reserved_sfr_0x000d     4000001a
+__sdcc_gsinit_startup     000002
+__sdcc_gsinit_startup2    no used
+__uninit_total_size__     000046
+_BODCON                   41000018
+_BPHCON                   40000018
+_BPHCONbits               40000018
+_BPLCON                   40000016
+_BPLCONbits               40000016
+_britness                 40000078
+_BWUCON                   40000012
+_BWUCONbits               40000012
+_BZ1CR                    4200000a
+_ChooseFlg                40000076
+_delay                    000100
+_delay_us                 0000de
+_Delay10us                0000d4
+_FD668_CHOOSE_STB_CLR     0000b8
+_FD668_CHOOSE_STB_SET     0000c6
+_FD668_Command            000068
+_FD668_DispData           40000066
+_FD668_DispTest           0001be
+_FD668_init               000330
+_FD668_WrByte             000074
+_FD668_WrDisp_AddrINC     00001a
+_FSR                      40000008
+_gpio_config              00012e
+_INDF                     40000000
+_INTE                     4000001c
+_INTEbits                 4000001c
+_INTF                     4000001e
+_INTFbits                 4000001e
+_IOSTB                    4100000c
+_IRCR                     4200000c
+_KeyNum                   40000074
+_main                     000176
+_OSCCR                    4200001e
+_PCHBUF                   40000014
+_PCL                      40000004
+_PCON                     40000010
+_PCON1                    4100001e
+_PCONbits                 40000010
+_PORTB                    4000000c
+_PORTBbits                4000000c
+_PS0CV                    41000014
+_PS1CV                    42000008
+_PWM1DUTY                 42000006
+_read_14bit_rom           no used
+_STATUS                   40000006
+_T0MD                     41000000
+_T1CR1                    42000002
+_T1CR2                    42000004
+_TBHD                     42000010
+_TBHP                     4200000e
+_TMR0                     40000002
+_TMR1                     42000000
+PSAVE                     40000020
+SSAVE                     40000022
+STK00                     4000003e
+STK01                     4000003c
+STK02                     4000003a
+STK03                     40000038
+STK04                     40000036
+STK05                     40000034
+STK06                     40000032
+STK07                     40000030
+STK08                     4000002e
+STK09                     4000002c
+STK10                     4000002a
+STK11                     40000028
+STK12                     40000026
+WSAVE                     40000024
+

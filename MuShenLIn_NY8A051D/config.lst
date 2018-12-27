@@ -1,0 +1,309 @@
+
+                    Nyquest Technology Co., Ltd.
+
+NYASM 2.14
+
+    ADDR  OPCODE/VALUE              LINE   TAG  SOURCE                   STATEMENT    
+
+                                    1-    1     ;--------------------------------------------------------
+                                    1-    2     ; File Created by SDCC : free open source ANSI-C Compiler
+                                    1-    3     ; Version 3.7.1 #0 (MSVC)
+                                    1-    4     ;--------------------------------------------------------
+                                    1-    5     ; NY8A port
+                                    1-    6     ;--------------------------------------------------------
+                                    1-    7     	.file	"config.c"
+                                    1-    8     	list	p=ny8A051D,c=on
+                                    1-    9     	#include "ny8A051D.inc"
+                                    2-    2     #include "ny8a051a.inc"
+                                    3-    1     ;; header file for NY8A051A assembly
+                                    3-    2     ;;
+                                    3-    3     ;; author    Ting
+                                    3-    4     ;; date      2017.04.18
+                                    3-    5     ;;/
+                                    3-    7     #include "common.inc"
+                                    4-    1     ;;----------------------------------------------
+                                    4-    2     ;; header file for 8 bit series assembly
+                                    4-    3     ;; author    Ting
+                                    4-    4     ;; date      2017.04.11
+                                    4-    5     ;;----------------------------------------------
+                                    4-    6     ;;
+                                    4-    7     ;; # constant definition
+                                    4-    8     ;;
+                                    4-    9     ;; ## instruction result store destination
+                                    4-   10     ;;  - W: the result is stored in the ACC.
+                                    4-   11     ;;  - F: the result is stored back in register.
+                                    4-   12     ;;
+                                    4-   13     W       EQU 0
+                                    4-   13     ;W = 0
+                                    4-   14     F       EQU 1
+                                    4-   14     ;F = 1
+                                    4-   16     ;; ## return from subroutine
+                                    4-   17     ;;
+                                    4-   18     RETURN      macro
+                                    4-   19 M       ret
+                                    4-   20 M       endm
+                                    4-   22     ; vim:ft=asm:expandtab
+                                    3-    9     ;; ## R-page SFR
+                                    3-   10     ;;
+                                    3-   11     INDF    EQU 0x0
+                                    3-   11     ;INDF = 0
+                                    3-   12     TMR0    EQU 0x1
+                                    3-   12     ;TMR0 = 1
+                                    3-   13     PCL     EQU 0x2
+                                    3-   13     ;PCL = 2
+                                    3-   14     STATUS  EQU 0x3
+                                    3-   14     ;STATUS = 3
+                                    3-   15     FSR     EQU 0x4
+                                    3-   15     ;FSR = 4
+                                    3-   17     PORTB   EQU 0x6
+                                    3-   17     ;PORTB = 6
+                                    3-   19     PCON    EQU 0x8
+                                    3-   19     ;PCON = 8
+                                    3-   20     BWUCON  EQU 0x9
+                                    3-   20     ;BWUCON = 9
+                                    3-   21     PCHBUF  EQU 0xa
+                                    3-   21     ;PCHBUF = 10
+                                    3-   22     BPLCON  EQU 0xb
+                                    3-   22     ;BPLCON = 11
+                                    3-   23     BPHCON  EQU 0xc
+                                    3-   23     ;BPHCON = 12
+                                    3-   25     INTE    EQU 0xe
+                                    3-   25     ;INTE = 14
+                                    3-   26     INTF    EQU 0xf
+                                    3-   26     ;INTF = 15
+                                    3-   28     ;; # macro
+                                    3-   29     ;;
+                                    3-   30     ;; macro use by SDCC
+                                    3-   31     PAGESEL     macro   rom_address
+                                    3-   32 M       endm
+                                    3-   34     BANKSEL     macro   ram_address
+                                    3-   35 M       endm
+                                    3-   37     ; vim:ft=asm:expandtab
+                                    1-   11     ;--------------------------------------------------------
+                                    1-   12     ; external declarations
+                                    1-   13     ;--------------------------------------------------------
+                                    1-   14     	extern	_led_init
+                                    1-   15     	extern	_protect_data_enble
+                                    1-   16     	extern	_PORTBbits
+                                    1-   17     	extern	_PCONbits
+                                    1-   18     	extern	_BWUCONbits
+                                    1-   19     	extern	_BPLCONbits
+                                    1-   20     	extern	_BPHCONbits
+                                    1-   21     	extern	_INTEbits
+                                    1-   22     	extern	_INTFbits
+                                    1-   23     	extern	_INDF
+                                    1-   24     	extern	_TMR0
+                                    1-   25     	extern	_PCL
+                                    1-   26     	extern	_STATUS
+                                    1-   27     	extern	_FSR
+                                    1-   28     	extern	_PORTB
+                                    1-   29     	extern	_PCON
+                                    1-   30     	extern	_BWUCON
+                                    1-   31     	extern	_PCHBUF
+                                    1-   32     	extern	_BPLCON
+                                    1-   33     	extern	_BPHCON
+                                    1-   34     	extern	_INTE
+                                    1-   35     	extern	_INTF
+                                    1-   36     	extern	_TMR1
+                                    1-   37     	extern	_T1CR1
+                                    1-   38     	extern	_T1CR2
+                                    1-   39     	extern	_PWM1DUTY
+                                    1-   40     	extern	_PS1CV
+                                    1-   41     	extern	_BZ1CR
+                                    1-   42     	extern	_IRCR
+                                    1-   43     	extern	_TBHP
+                                    1-   44     	extern	_TBHD
+                                    1-   45     	extern	_OSCCR
+                                    1-   46     	extern	_IOSTB
+                                    1-   47     	extern	_PS0CV
+                                    1-   48     	extern	_BODCON
+                                    1-   49     	extern	_PCON1
+                                    1-   50     	extern	_T0MD
+                                    1-   52     	extern PSAVE
+                                    1-   53     	extern SSAVE
+                                    1-   54     	extern WSAVE
+                                    1-   55     	extern STK12
+                                    1-   56     	extern STK11
+                                    1-   57     	extern STK10
+                                    1-   58     	extern STK09
+                                    1-   59     	extern STK08
+                                    1-   60     	extern STK07
+                                    1-   61     	extern STK06
+                                    1-   62     	extern STK05
+                                    1-   63     	extern STK04
+                                    1-   64     	extern STK03
+                                    1-   65     	extern STK02
+                                    1-   66     	extern STK01
+                                    1-   67     	extern STK00
+                                    1-   68     ;--------------------------------------------------------
+                                    1-   69     ; global declarations
+                                    1-   70     ;--------------------------------------------------------
+                                    1-   71     	extern	_gpio_config
+                                    1-   73     ;--------------------------------------------------------
+                                    1-   74     ; global definitions
+                                    1-   75     ;--------------------------------------------------------
+                                    1-   76     ;--------------------------------------------------------
+                                    1-   77     ; absolute symbol definitions
+                                    1-   78     ;--------------------------------------------------------
+                                    1-   79     ;--------------------------------------------------------
+                                    1-   80     ; compiler-defined variables
+                                    1-   81     ;--------------------------------------------------------
+                                    1-   82     .segment "uninit"
+     0000                           1-   83     r0x1000:
+                                    1-   84     	.res	1
+                                    1-   85     ;--------------------------------------------------------
+                                    1-   86     ; initialized data
+                                    1-   87     ;--------------------------------------------------------
+                                    1-   88     ;--------------------------------------------------------
+                                    1-   89     ; overlayable items in internal ram 
+                                    1-   90     ;--------------------------------------------------------
+                                    1-   91     ;	udata_ovr
+                                    1-   92     ;--------------------------------------------------------
+                                    1-   93     ; code
+                                    1-   94     ;--------------------------------------------------------
+                                    1-   95     ;***
+                                    1-   96     ;  pBlock Stats: dbName = C
+                                    1-   97     ;***
+                                    1-   98     ;has an exit
+                                    1-   99     ;1 compiler assigned register :
+                                    1-  100     ;   r0x1000
+                                    1-  101     ;; Starting pCode block
+                                    1-  102     .segment "code"; module=config, function=_gpio_config
+     0000                           1-  104     _gpio_config:
+                                    1-  105     ; 2 exit points
+                                    1-  106     	.line	24, "config.c"; 	BC(BPHCON,7);	
+     0000 1Frr                      1-  107     	BCR	_BPHCON,7
+                                    1-  108     	.line	27, "config.c"; 	BC(IOSTB,0);BS(PORTB,0); //SDA_PB0  输出高电平
+     0001 001r                      1-  109     	IOSTR	_IOSTB
+     0002 00rr                      1-  110     	MOVAR	r0x1000
+     0003 1Crr                      1-  111     	BCR	r0x1000,0
+     0004 01rr                      1-  112     	MOVR	r0x1000,W
+     0005 000r                      1-  113     	IOST	_IOSTB
+     0006 18rr                      1-  114     	BSR	_PORTB,0
+                                    1-  115     	.line	28, "config.c"; 	BC(IOSTB,1);BS(PORTB,1); //SCL_PB1  输出高电平
+     0007 001r                      1-  116     	IOSTR	_IOSTB
+     0008 00rr                      1-  117     	MOVAR	r0x1000
+     0009 1Crr                      1-  118     	BCR	r0x1000,1
+     000A 01rr                      1-  119     	MOVR	r0x1000,W
+     000B 000r                      1-  120     	IOST	_IOSTB
+     000C 18rr                      1-  121     	BSR	_PORTB,1
+                                    1-  122     	.line	30, "config.c"; 	BC(IOSTB,2);BS(PORTB,2); //ST1_PB2  输出高电平
+     000D 001r                      1-  123     	IOSTR	_IOSTB
+     000E 00rr                      1-  124     	MOVAR	r0x1000
+     000F 1Drr                      1-  125     	BCR	r0x1000,2
+     0010 01rr                      1-  126     	MOVR	r0x1000,W
+     0011 000r                      1-  127     	IOST	_IOSTB
+     0012 19rr                      1-  128     	BSR	_PORTB,2
+                                    1-  129     	.line	31, "config.c"; 	BC(IOSTB,4);BS(PORTB,4); //ST2_PB4  输出高电平
+     0013 001r                      1-  130     	IOSTR	_IOSTB
+     0014 00rr                      1-  131     	MOVAR	r0x1000
+     0015 1Err                      1-  132     	BCR	r0x1000,4
+     0016 01rr                      1-  133     	MOVR	r0x1000,W
+     0017 000r                      1-  134     	IOST	_IOSTB
+     0018 1Arr                      1-  135     	BSR	_PORTB,4
+                                    1-  136     	.line	33, "config.c"; 	BS(IOSTB,5);
+     0019 001r                      1-  137     	IOSTR	_IOSTB
+     001A 00rr                      1-  138     	MOVAR	r0x1000
+     001B 1Arr                      1-  139     	BSR	r0x1000,5
+     001C 01rr                      1-  140     	MOVR	r0x1000,W
+     001D 000r                      1-  141     	IOST	_IOSTB
+                                    1-  142     	.line	34, "config.c"; 	BS(IOSTB,3);//key输入
+     001E 001r                      1-  143     	IOSTR	_IOSTB
+     001F 00rr                      1-  144     	MOVAR	r0x1000
+     0020 19rr                      1-  145     	BSR	r0x1000,3
+     0021 01rr                      1-  146     	MOVR	r0x1000,W
+     0022 000r                      1-  147     	IOST	_IOSTB
+                                    1-  148     	.line	39, "config.c"; 	}
+                                    1-  149     	RETURN	
+     0023 0010                      4-   19 m1      ret
+                                    1-  150     ; exit point of _gpio_config
+                                    1-  153     ;	code size estimation:
+                                    1-  154     ;	   36+    0 =    36 instructions (   72 byte)
+                                    1-  156     	end
+
+SYMBOL TABLE            TYPE     VALUE
+__processor__           Constant 00800513
+_BODCON                 Label    00000000
+_BPHCON                 Label    00000000
+_BPHCONbits             Label    00000000
+_BPLCON                 Label    00000000
+_BPLCONbits             Label    00000000
+_BWUCON                 Label    00000000
+_BWUCONbits             Label    00000000
+_BZ1CR                  Label    00000000
+_FSR                    Label    00000000
+_gpio_config            Label    00000000
+_INDF                   Label    00000000
+_INTE                   Label    00000000
+_INTEbits               Label    00000000
+_INTF                   Label    00000000
+_INTFbits               Label    00000000
+_IOSTB                  Label    00000000
+_IRCR                   Label    00000000
+_led_init               Label    00000000
+_OSCCR                  Label    00000000
+_PCHBUF                 Label    00000000
+_PCL                    Label    00000000
+_PCON                   Label    00000000
+_PCON1                  Label    00000000
+_PCONbits               Label    00000000
+_PORTB                  Label    00000000
+_PORTBbits              Label    00000000
+_protect_data_enble     Label    00000000
+_PS0CV                  Label    00000000
+_PS1CV                  Label    00000000
+_PWM1DUTY               Label    00000000
+_STATUS                 Label    00000000
+_T0MD                   Label    00000000
+_T1CR1                  Label    00000000
+_T1CR2                  Label    00000000
+_TBHD                   Label    00000000
+_TBHP                   Label    00000000
+_TMR0                   Label    00000000
+_TMR1                   Label    00000000
+BPHCON                  Constant 0000000C
+BPLCON                  Constant 0000000B
+BWUCON                  Constant 00000009
+F                       Constant 00000001
+FSR                     Constant 00000004
+INDF                    Constant 00000000
+INTE                    Constant 0000000E
+INTF                    Constant 0000000F
+PCHBUF                  Constant 0000000A
+PCL                     Constant 00000002
+PCON                    Constant 00000008
+PORTB                   Constant 00000006
+PSAVE                   Label    00000000
+r0x1000                 Label    00000000
+SSAVE                   Label    00000000
+STATUS                  Constant 00000003
+STK00                   Label    00000000
+STK01                   Label    00000000
+STK02                   Label    00000000
+STK03                   Label    00000000
+STK04                   Label    00000000
+STK05                   Label    00000000
+STK06                   Label    00000000
+STK07                   Label    00000000
+STK08                   Label    00000000
+STK09                   Label    00000000
+STK10                   Label    00000000
+STK11                   Label    00000000
+STK12                   Label    00000000
+TMR0                    Constant 00000001
+W                       Constant 00000000
+WSAVE                   Label    00000000
+
+
+SOURCE FILE TABLE
+001 config.s
+002 ny8A051D.inc
+003 ny8a051a.inc
+004 common.inc
+005 config.c
+
+PROCESSOR    = NY8A051D (8 bits)
+PROGRAM ROM  = 0x00000000 - 0x000003FF
+DATA ROM     = 0x00000000 - 0x000003FF
+RESERVED MEM = 0x00000400 - 0x00000410
+SRAM / SFR   = 0x00000000 - 0x00000000
