@@ -1,0 +1,27 @@
+--cpu Cortex-M4.fp
+".\obj\system_m451series.o"
+".\obj\startup_m451series.o"
+".\obj\main.o"
+".\obj\config.o"
+".\obj\st7567.o"
+".\obj\st7567_api.o"
+".\obj\event_process.o"
+".\obj\get_event.o"
+".\obj\dmx512.o"
+".\obj\dmx512_api.o"
+".\obj\tasks.o"
+".\obj\timers.o"
+".\obj\list.o"
+".\obj\queue.o"
+".\obj\port.o"
+".\obj\heap_2.o"
+".\obj\retarget.o"
+".\obj\sys.o"
+".\obj\uart.o"
+".\obj\clk.o"
+".\obj\gpio.o"
+".\obj\fmc.o"
+--library_type=microlib --strict --scatter ".\obj\RTOSDemo.sct"
+--summary_stderr --info summarysizes --map
+--info sizes
+--list ".\lst\RTOSDemo.map" -o .\obj\RTOSDemo.axf

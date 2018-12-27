@@ -1,0 +1,13 @@
+.\obj\timer.o: ..\Library\StdDriver\src\timer.c
+.\obj\timer.o: ..\Library\Device\Nuvoton\M451Series\Include\M451Series.h
+.\obj\timer.o: ..\Library\CMSIS\Include\core_cm4.h
+.\obj\timer.o: f:\Keil_v5\ARM\ARMCC\bin\..\include\stdint.h
+.\obj\timer.o: ..\Library\CMSIS\Include\core_cmInstr.h
+.\obj\timer.o: ..\Library\CMSIS\Include\core_cmFunc.h
+.\obj\timer.o: ..\Library\CMSIS\Include\core_cm4_simd.h
+.\obj\timer.o: ..\Library\Device\Nuvoton\M451Series\Include\system_M451Series.h
+.\obj\timer.o: ..\Library\StdDriver\inc\sys.h
+.\obj\timer.o: ..\Library\StdDriver\inc\clk.h
+.\obj\timer.o: ..\Library\StdDriver\inc\gpio.h
+.\obj\timer.o: ..\Library\StdDriver\inc\timer.h
+.\obj\timer.o: ..\Library\StdDriver\inc\uart.h

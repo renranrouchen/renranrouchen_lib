@@ -1,0 +1,14 @@
+.\obj\clk.o: ..\Library\StdDriver\src\clk.c
+.\obj\clk.o: ..\Library\Device\Nuvoton\M451Series\Include\M451series.h
+.\obj\clk.o: ..\Library\CMSIS\Include\core_cm4.h
+.\obj\clk.o: f:\Keil_v5\ARM\ARMCC\bin\..\include\stdint.h
+.\obj\clk.o: ..\Library\CMSIS\Include\core_cmInstr.h
+.\obj\clk.o: ..\Library\CMSIS\Include\core_cmFunc.h
+.\obj\clk.o: ..\Library\CMSIS\Include\core_cm4_simd.h
+.\obj\clk.o: ..\Library\Device\Nuvoton\M451Series\Include\system_M451Series.h
+.\obj\clk.o: ..\Library\StdDriver\inc\sys.h
+.\obj\clk.o: ..\Library\StdDriver\inc\clk.h
+.\obj\clk.o: ..\Library\StdDriver\inc\gpio.h
+.\obj\clk.o: ..\Library\StdDriver\inc\fmc.h
+.\obj\clk.o: ..\Library\Device\Nuvoton\M451Series\Include\M451Series.h
+.\obj\clk.o: ..\Library\StdDriver\inc\uart.h
