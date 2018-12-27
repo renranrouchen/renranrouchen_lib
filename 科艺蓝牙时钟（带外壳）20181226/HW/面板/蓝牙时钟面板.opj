@@ -1,0 +1,35 @@
+(ExpressProject ""
+  (ProjectVersion "19981106")
+  (ProjectType "PCB")
+  (Folder "Design Resources"
+    (Folder "Library")
+    (File ".\蓝牙时钟面板.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (NoModify))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (PartMRUSelector)
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" ".\蓝牙时钟面板.dsn")
+      (Path "Design Resources" ".\蓝牙时钟面板.dsn" "SCHEMATIC1")
+      (Select "Design Resources" ".\蓝牙时钟面板.dsn" "SCHEMATIC1" "PAGE1"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -1 -1 0 200 0 472"))
+      (Tab 0))
+    (Doc
+      (Type "COrSchematicDoc")
+      (Frame
+        (Placement "44 2 3 -1 -1 -8 -30 25 1582 25 642")
+        (Scroll "0 622")
+        (Zoom "236")
+        (Occurrence "/"))
+      (Path "D:\1海矽\杰理蓝牙\科艺蓝牙时钟（带外壳）\HW\面板\蓝牙时钟面板.DSN")
+      (Schematic "SCHEMATIC1")
+      (Page "PAGE1"))))

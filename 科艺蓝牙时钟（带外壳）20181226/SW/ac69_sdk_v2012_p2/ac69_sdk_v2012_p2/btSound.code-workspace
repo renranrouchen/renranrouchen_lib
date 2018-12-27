@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"sys_detect.h": "c",
+			"sdk_cfg.h": "c",
+			"timer_api.h": "c",
+			"common.h": "c",
+			"fd612drv.h": "c",
+			"includes.h": "c",
+			"typedef.h": "c",
+			"asm_type.h": "c",
+			"production_config_param.h": "c",
+			"keyi_rtc_app.h": "c",
+			"string.h": "c",
+			"ui_api.h": "c",
+			"main_key.h": "c",
+			"msg.h": "c",
+			"rtc_key.h": "c"
+		}
+	}
+}
+
