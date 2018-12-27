@@ -1,0 +1,66 @@
+{
+	"folders": [
+		{
+			"path": "Y:\\ESP8266_IOT_SDK\\SNTP"
+		},
+		{
+			"path": "Y:\\ESP8266_IOT_SDK\\tcp"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"xiosbase": "c",
+			"iosfwd": "c",
+			"webstring.h": "c",
+			"webclient.h": "c",
+			"log.h": "c",
+			"cfg_api.h": "c",
+			"version.h": "c",
+			"wla_api.h": "c",
+			"wifi_clock_cfg.h": "c",
+			"cmath": "cpp",
+			"lynx_debug.h": "c",
+			"istream": "c",
+			"common.h": "c",
+			"lynx_dev.h": "c",
+			"mt_types.h": "c",
+			"chip.h": "c",
+			"sdk_config.h": "c",
+			"sockets.h": "c",
+			"event_process.h": "c",
+			"wifi_time.h": "c",
+			"wifi_weather.h": "c",
+			"string.h": "c",
+			"corecrt_wstring.h": "c",
+			"ui_display.h": "c",
+			"omniconfig.h": "c",
+			"math.h": "c",
+			"fd612demo_app.h": "c",
+			"nowtime.h": "c",
+			"app_config.h": "c",
+			"wifi_pm25.h": "c",
+			"ntpd.h": "c",
+			"rtc.h": "c",
+			"gpio.h": "c",
+			"httpd.h": "c",
+			"alarm.h": "c",
+			"key_process.h": "c",
+			"rtc_time.h": "c",
+			"cjson.h": "c",
+			"event_loop.h": "c",
+			"fd612drv.h": "c",
+			"webserver.h": "c",
+			"condition_variable": "c",
+			"future": "c",
+			"array": "c",
+			"chrono": "c",
+			"functional": "c",
+			"ratio": "c",
+			"type_traits": "c",
+			"tuple": "c",
+			"utility": "c",
+			"user_main.h": "c",
+			"user_interface.h": "c"
+		}
+	}
+}

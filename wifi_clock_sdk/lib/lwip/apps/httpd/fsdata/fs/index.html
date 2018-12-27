@@ -1,0 +1,228 @@
+﻿<!--DOCTYPE html-->
+<html>
+     <head>   
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes"/>    
+        <link rel="stylesheet" href="css/siimple.css" type="text/css" />
+        <script src="js/wifi.js" type="text/javascript"></script>
+    </head>
+    <body>    
+            <form id="wifi" name="wifi" action=./success.html method="GET">
+                <div class="spl-grid-row">    
+                <p class="spl-textarea">路由器账号</p>    
+                <input class="spl-textarea" type="text" name="SSID">
+                <br />
+                <p class="spl-textarea">路由器密码</p>
+                <input class="spl-textarea" type="text" name="PSWD">
+                
+                <br />  
+                <p class="spl-textarea">净化器ID</p>
+                <input class="spl-textarea" type="text" name="acid">
+
+                <br />  
+                <p class="spl-textarea">设备ID</p>
+                <input class="spl-textarea" type="text" name="deviceid">              
+                
+                <!-- <br />        
+                <p class="spl-label">闁伙拷娴ｅ嘲鏁�</p>
+                <select id="city" class="spl-select" name="city" onchange="fillinDowntown()" >
+                </select>
+
+                <p class="spl-label">闁糕晛楠哥粩锟�</p>
+                <select id="downtown" class="spl-select" name="downtown" >
+                </select>  -->
+              
+                <!-- <br />
+                <label class="spl-label">闁猴拷?闁告熬绠戠槐鎴﹀触?闁轰礁锟界�夸化闁硅翰鍎插�烇拷</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="nowtime" value="1" name="nowtime">
+                    <label for="nowtime"></label>
+                </div>
+                <br />
+                <label class="spl-label">闁猴拷?闁告熬绠戠槐鎴﹀触?24閻忓繐绻戝�炲倿寮伴崜褋浠�</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="timeFmt" value="1" name="timeFmt">
+                    <label for="timeFmt"></label>
+                </div>
+                <br />
+                <label class="spl-label">闁猴拷?闁告熬绠撻埀锟芥径瀣�锟姐劑骞楅崟锟介惃锟介幖杈鹃檮濡�澶岀矆?</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="tempFmt" value="1" name="tempFmt">
+                    <label for="tempFmt"></label>
+                </div> 
+
+                <br />
+                <label class="spl-label">閺夊牆锟藉﹤锟芥娊鏌呮径瀣�锟斤拷</label>
+                <select class="spl-select" name="brightness">
+                    <option value="1">1</option>
+                    <option value="2">2  </option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option selected="true" value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+
+                <br />
+                <label class="spl-label">闂傚倸缍婇幐锟� 1</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="alarm" value="1" name="alarm1">
+                    <label for="alarm"></label>
+                </div>
+                <select id="hour1" class="spl-select" name="alramTime1" >
+
+                </select> 
+                <label class="spl-label">:</label>
+
+                <select id="min1" class="spl-select">
+
+                </select> 
+                <label class="spl-label">:</label> 
+                <select id="sec1" class="spl-select">
+
+                </select> 
+                <label class="spl-label">闁伙拷閿涘嫭鑰�</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="sleep1" value="1" name="sleep1">
+                    <label for="sleep1"></label>
+                </div>
+                <div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxes('c1')">
+                    <select>
+                        <option>闂佹彃绉�??</option>
+                    </select>
+                    <div class="overSelect"></div>
+                    </div>
+                    <div class="checkboxes" id="c1">
+                    <label for="r1">
+                        <input class="hidden" name="r1" type="checkbox" id="r1" value="1"/>闂傚倸缍婇幐锟�1</label>                       
+                    <label for="r11">
+                        <input type="checkbox" id="r11" onclick="rCl('r1')"/>闁告稏鍔嬬粩锟�</label>
+                    <label for="r12">
+                        <input type="checkbox" id="r12" onclick="rCl('r1')"/>闁告稏鍔嬬花锟�</label>
+                    <label for="r13">
+                        <input type="checkbox" id="r13" onclick="rCl('r1')"/>闁告稏鍔嬬粭锟�</label>
+                    <label for="r14">
+                        <input type="checkbox" id="r14" onclick="rCl('r1')"/>闁告稏鍔屽ú锟�</label>
+                    <label for="r15">
+                        <input type="checkbox" id="r15" onclick="rCl('r1')"/>闁告稏鍔嬬花锟�</label>
+                    <label for="r16">
+                        <input type="checkbox" id="r16" onclick="rCl('r1')"/>闁告稏鍔岄崣锟�</label>
+                    <label for="r17">
+                        <input type="checkbox" id="r17" onclick="rCl('r1')"/>闁告稏鍔嶅Λ锟�</label>                        
+                    </div>
+                </div>
+
+                <br />  
+                <label class="spl-label">闂傚倸缍婇幐锟� 2</label>  
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="alarm2" value="1" name="alarm2">
+                    <label for="alarm2"></label>
+                </div>
+
+                <select id="hour2" class="spl-select" name="alramTime2">
+                            
+                </select>
+                <label class="spl-label">:</label>  
+                <select id="min2" class="spl-select">
+
+                </select>
+                <label class="spl-label">:</label>   
+                <select id="sec2" class="spl-select">
+
+                </select>
+                <label class="spl-label">闁伙拷閿涘嫭鑰�</label>
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="sleep2" value="1" name="sleep2">
+                    <label for="sleep2"></label>
+                </div>
+
+                <div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxes('c2')">
+                    <select>
+                        <option>闂佹彃绉�??</option>
+                    </select>
+                    <div class="overSelect"></div>
+                    </div>
+                    <div class="checkboxes" id="c2">
+                        <label for="r2">
+                        <input class="hidden" name="r2" type="checkbox" id="r2" value="1"/>闂傚倸缍婇幐锟�2</label>
+                        <label for="r21">
+                            <input type="checkbox" id="r21" onclick="rCl('r2')"/>闁告稏鍔嬬粩锟�</label>
+                        <label for="r22">
+                            <input type="checkbox" id="r22" onclick="rCl('r2')"/>闁告稏鍔嬬花锟�</label>
+                        <label for="r23">
+                            <input type="checkbox" id="r23" onclick="rCl('r2')"/>闁告稏鍔嬬粭锟�</label>
+                        <label for="r24">
+                            <input type="checkbox" id="r24" onclick="rCl('r2')"/>闁告稏鍔屽ú锟�</label>
+                        <label for="r25">
+                            <input type="checkbox" id="r25" onclick="rCl('r2')"/>闁告稏鍔嬬花锟�</label>
+                        <label for="r26">
+                            <input type="checkbox" id="r26" onclick="rCl('r2')"/>闁告稏鍔岄崣锟�</label>
+                        <label for="r27">
+                            <input type="checkbox" id="r27" onclick="rCl('r2')"/>闁告稏鍔嶅Λ锟�</label>                                                   
+                    </div>
+                </div>
+
+
+                <br /> 
+                <label class="spl-label">闂傚倸缍婇幐锟� 3</label>   
+                <div class="spl-checkbox">
+                    <input type="checkbox" id="alarm3" value="1" name="alarm3">
+                    <label for="alarm3"></label>
+                </div>
+                <select id="hour3" class="spl-select" name="alramTime3" >
+
+                </select>
+
+                <label class="spl-label">:</label>  
+                <select id="min3" class="spl-select">
+
+                </select>
+                <label class="spl-label">:</label>  
+                <select id="sec3" class="spl-select">
+
+                </select> 
+
+               <label class="spl-label">闁伙拷閿涘嫭鑰�</label>
+                <div class="spl-checkbox">   
+                <input type="checkbox" id="sleep3" value="1" name="sleep3"/>
+                <label for="sleep3"></label>
+                </div>  
+
+                <div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxes('c3')">
+                    <select>
+                        <option>闂佹彃绉�??</option>
+                    </select>
+                    <div class="overSelect"></div>
+                    </div>
+                    <div class="checkboxes" id="c3">
+                    <label for="r3">
+                        <input class="hidden" name="r3" type="checkbox" id="r3" value="1"/>闂傚倸缍婇幐锟�3</label>                                            
+                    <label for="r31">
+                        <input type="checkbox" id="r31" onclick="rCl('r3')"/>闁告稏鍔嬬粩锟�</label>
+                    <label for="r32">
+                        <input type="checkbox" id="r32" onclick="rCl('r3')"/>闁告稏鍔嬬花锟�</label>
+                    <label for="r33">
+                        <input type="checkbox" id="r33" onclick="rCl('r3')"/>闁告稏鍔嬬粭锟�</label>
+                    <label for="r34">
+                        <input type="checkbox" id="r34" onclick="rCl('r3')"/>闁告稏鍔屽ú锟�</label>
+                    <label for="r35">
+                        <input type="checkbox" id="r35" onclick="rCl('r3')"/>闁告稏鍔嬬花锟�</label>
+                    <label for="r36">
+                        <input type="checkbox" id="r36" onclick="rCl('r3')"/>闁告稏鍔岄崣锟�</label>
+                    <label for="r37">
+                        <input type="checkbox" id="r37" onclick="rCl('r3')"/>闁告稏鍔嶅Λ锟�</label>                                        
+                    </div>
+                </div> -->
+
+                <br />
+                <input class="spl-btn" type="submit" value="确定" onclick="window.location.href='success.html'">                 
+            </div> 
+            </form>
+
+    </body>    
+ 
+</html>

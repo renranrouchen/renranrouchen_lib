@@ -1,0 +1,3 @@
+---- wifiPm25.update.updateInterval Matches (2 in 0 files) ----
+Wifi_pm25.c (proj\wifi_clock\wificlock_app)://	wifiPm25.update.updateInterval = sdkParam.wth_parma.updateInterval;
+Wifi_pm25.c (proj\wifi_clock\wificlock_app):	wifiPm25.update.updateInterval = PM25_UPDATE_INTERVAL;

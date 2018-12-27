@@ -1,0 +1,457 @@
+/*-------------------------------------------------------------------------
+*@Author		Zwxf
+*@Email			Zwxf.cw@gmail.com
+/*
+ * Copyright(c) 2016-2100.  zwxf.  All rights reserved.
+ */
+/*
+ * FileName:      app_config.c
+ * Author:        zwxf
+ * Email:         zhiwei1007@qq.com
+ * DateTime:      2017-05-27 09:06:03
+ * ModifiedTime:  2017-05-27 09:06:03
+ */
+#include <common.h>
+#if defined(CONFIG_FREERTOS)
+#include <FreeRTOS.h>
+#include <task.h>
+#endif
+//#include <string.h>
+#include <cfg_api.h>
+#include <log/log.h>
+#include <app_config.h>
+#include <event_process.h>
+//#include <city.h>
+#include <cJSON.h>
+#include <wifi_clock_cfg.h>
+extern sdk_param sdkParam;;
+const char* cityTable [434] = {"海淀","朝阳","顺义","怀柔","通州","昌平","延庆","丰台","石景山",
+"大兴","房山","密云","门头沟","平谷","闵行","宝山","嘉定","浦东新区","金山","青浦","松江",
+"奉贤","崇明","徐汇","武清","宝坻","东丽","西青","北辰","宁河","静海","津南","滨海新区",
+"蓟县","永川","合川","南川","江津","渝北","北碚","巴南","长寿","黔江","万州","涪陵","开县",
+"城口","云阳","巫溪","奉节","巫山","潼南","垫江","梁平","忠县","石柱","大足","荣昌","铜梁",
+"璧山","丰都","武隆","彭水","綦江","酉阳","秀山","哈尔滨","齐齐哈尔","牡丹江","佳木斯",
+"绥化","黑河","大兴安岭","伊春","大庆","七台河","鸡西","鹤岗","双鸭山","长春","舒兰",
+"永吉","蛟河","磐石","桦甸","延边","四平","通化","白城","辽源","松原","白山","沈阳","大连",
+"鞍山","抚顺","本溪","丹东","锦州","营口","阜新","辽阳","铁岭","朝阳","盘锦","葫芦岛","呼和浩特",
+"包头","乌海","乌兰察布","通辽","赤峰","鄂尔多斯","巴彦淖尔","锡林郭勒","呼伦贝尔",
+"兴安盟","阿拉善盟","石家庄","保定","张家口","承德","唐山","廊坊","沧州","衡水","邢台",
+"邯郸","秦皇岛","太原","大同","阳泉","晋中","长治","晋城","临汾","运城","朔州","忻州",
+"吕梁","西安","咸阳","延安","榆林","渭南","商洛","安康","汉中","宝鸡","铜川","杨凌","济南",
+"青岛","淄博","德州","烟台","潍坊","济宁","泰安","临沂","菏泽","滨州","东营","威海","枣庄",
+"日照","莱芜","聊城","乌鲁木齐","克拉玛依","石河子","昌吉","吐鲁番","巴音郭楞","阿拉尔",
+"阿克苏","喀什","伊犁","塔城","哈密","和田","阿勒泰","克州","博尔塔拉","拉萨","日喀则",
+"山南","林芝","昌都","那曲","阿里","西宁","海东","黄南","海南","果洛","玉树","海西","海北",
+"兰州","定西","平凉","庆阳","武威","金昌","张掖","酒泉","天水","陇南","临夏","甘南","白银",
+"嘉峪关","银川","石嘴山","吴忠","固原","中卫","郑州","安阳","新乡","许昌","平顶山","信阳",
+"南阳","开封","洛阳","商丘","焦作","鹤壁","濮阳","周口","漯河","驻马店","三门峡","济源",
+"南京","无锡","镇江","苏州","南通","扬州","盐城","徐州","淮安","连云港","常州","泰州",
+"宿迁","武汉","襄阳","鄂州","孝感","黄冈","黄石","咸宁","荆州","宜昌","恩施","十堰",
+"神农架","随州","荆门","天门","仙桃","潜江","杭州","湖州","嘉兴","宁波","绍兴","台州",
+"温州","丽水","金华","衢州","舟山","合肥","蚌埠","芜湖","淮南","马鞍山","安庆","宿州",
+"阜阳","亳州","黄山","滁州","淮北","铜陵","宣城","六安","池州","福州","厦门","宁德",
+"莆田","泉州","漳州","龙岩","三明","南平","钓鱼岛","南昌","九江","上饶","抚州","宜春",
+"吉安","赣州","景德镇","萍乡","新余","鹰潭","长沙","湘潭","株洲","衡阳","郴州","常德",
+"益阳","娄底","邵阳","岳阳","张家界","怀化","永州","湘西","贵阳","遵义","安顺","黔南",
+"黔东南","铜仁","毕节","六盘水","黔西南","成都","攀枝花","自贡","绵阳","南充","达州",
+"遂宁","广安","巴中","泸州","宜宾","内江","资阳","乐山","眉山","凉山","雅安","甘孜",
+"阿坝","德阳","广元","广州","韶关","惠州","梅州","汕头","深圳","珠海","佛山","肇庆",
+"湛江","江门","河源","清远","云浮","潮州","东莞","中山","阳江","揭阳","茂名","汕尾",
+"昆明","大理","红河","曲靖","保山","文山","玉溪","楚雄","普洱","昭通","临沧","怒江",
+"迪庆","丽江","德宏","西双版纳","南宁","崇左","柳州","来宾","桂林","梧州","贺州","贵港",
+"玉林","百色","钦州","河池","北海","防城港","海口","三亚","东方","临高","澄迈","儋州",
+"昌江","白沙","琼中","定安","屯昌","琼海","文昌","保亭","万宁","陵水","乐东","五指山",
+"九龙","新界","氹仔岛","路环岛","台北","高雄","台中"};
+const unsigned int cityIdTable[4][434] = {
+	{22,2,3,4,5,6,7,8,9,10,11,12,13,14,46,37,38,40,47,41,42,43,44,45,34,24,25,26,27,35,30,31,32,28,140,106,107,108,110,111,112,113,114,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,412,423,413,414,415,416,424,418,419,420,421,422,417,425,1590,1990,993,1432,864,432,427,433,429,430,431,428,434,446,435,436,437,438,447,440,441,442,443,444,445,439,225,235,226,227,228,236,230,231,232,891,234,229,48,57,49,50,51,58,53,54,55,56,52,326,332,333,334,331,335,327,328,329,330,336,316,324,317,318,325,320,321,322,323,319,2345,299,310,311,312,313,300,314,315,301,302,303,304,305,306,307,308,309,337,352,338,339,340,341,342,343,344,345,346,347,348,349,350,351,353,358,354,359,356,357,355,291,297,292,298,294,295,296,293,151,163,152,153,154,155,164,157,158,159,160,161,162,156,286,289,290,288,287,59,76,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,399,410,400,401,402,403,411,405,406,407,408,
+	409,404,248,260,261,262,249,263,264,250,251,252,253,254,255,256,257,258,259,94,96,97,104,99,100,101,102,98,103,95,77,93,78,79,80,81,82,83,84,85,86,87,88,89,90,92,141,147,148,149,142,143,144,150,146,2522,237,246,238,239,240,247,242,243,244,245,241,384,398,385,386,387,388,389,390,391,392,393,394,396,397,200,207,201,202,208,204,205,206,2557,265,285,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,165,185,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,209,222,210,223,224,211,212,213,214,215,216,217,218,219,220,221,186,198,187,188,189,190,199,192,193,194,195,196,197,191,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,381,382,2629,2630,2632,2633,360,361,362},
+	{0},
+	{0},
+	{0}
+};
+
+#ifndef WEB_CONFIG
+#define IS_EQUAL(str,buff)	(strcmp(str,buff) == 0)
+typedef enum {
+	NOWTIME = 0,
+	BRIGHTNESS,
+	CITY,
+	TEMP,
+	ALARMDAY,
+	CLOCK1,
+	SLEEP1,	
+	TIME1,
+	REPEAT1,
+	CLOCK2,
+	SLEEP2,	
+	TIME2,
+	REPEAT2,
+	CLOCK3,
+	SLEEP3,	
+	TIME3,
+	REPEAT3,
+	CONFIG_PARAM,
+	CLOSE,
+	
+	MAX_INDEX = 255,
+}CONFIG_TYPE;
+
+const char* configList[] = {"nowtime","brightness","city","temp","alarmday","clock1","sleep1","time1","repeat1","clock2","sleep2","time2","repeat2","clock3","sleep3","time3","repeat3","flash_param","close"};
+enum {
+	MONDAY 		= 1 << 0,
+	TUESDAY 	= 1 << 1,
+	WEDNESDAY	= 1 << 2,
+	THURSDAY	= 1 << 3,
+	FRIDAY		= 1 << 4,
+	SATURDAY	= 1 << 5,
+	SUNDAY		= 1 << 6,
+};
+
+typedef struct {
+	char nowtime;
+	char brightness;
+	char temp;
+	unsigned int city;
+	
+	char sleep1;
+	char sleep2;
+	char sleep3;
+
+	char alarm1;
+	char alarm2;
+	char alarm3;
+	alarm_param alm_param[ALARM_NUM];
+}t_config_param;
+app_config_param appCfgPrm;
+
+static t_config_param configParam;
+static void init_socket_param()
+{
+	char loop = 0;
+	memset(&(appCfgPrm.skPam.cltAddr),0,sizeof(struct sockaddr_in));
+	memset(&(appCfgPrm.skPam.srvAddr),0,sizeof(struct sockaddr_in));
+	for (loop = 0; loop < 10;loop++) {
+		appCfgPrm.skPam.clientMsg.clientFd[loop] = -1;
+	}
+	appCfgPrm.skPam.clientMsg.clientFdIndex = 0;
+}
+
+char start_up()
+{
+	int ret = -1;
+	
+	appCfgPrm.skPam.srvFd = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+	if(appCfgPrm.skPam.srvFd< 0){
+		return -1;	
+		printf("======create fd fail=======\n");
+	}
+	appCfgPrm.skPam.srvAddr.sin_port = htons(appCfgPrm.skPam.srvPort);
+	appCfgPrm.skPam.srvAddr.sin_family = AF_INET;
+	appCfgPrm.skPam.srvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	ret = bind(appCfgPrm.skPam.srvFd,(struct sockaddr* )&(appCfgPrm.skPam.srvAddr),sizeof(struct sockaddr_in));
+	if (ret < 0) {
+		return -1;
+		printf("=============bind failure=========\n");
+	}		
+	ret = listen(appCfgPrm.skPam.srvFd,4);
+	if (ret < 0) {
+		return -1;
+		printf("============listen failure===============\n");
+	}
+	return 1;
+}
+
+char*
+get_post_item(const char* postData,const char* item)
+{
+    int len = 0;
+    char* addr;
+    static char str[50];
+    addr = (char*)strstr(postData,item);
+
+    if(addr == NULL){
+        return NULL;
+    }
+    addr += strlen(item) + 1;
+
+    for(len;*(addr + len) != '&';len++)
+        ;
+    memset(str,0,sizeof(str));
+    memcpy(str,addr,len);
+    return (char* )str;
+}
+
+CONFIG_TYPE
+get_config_index(const char* buff,char** indexBuff)
+{
+	unsigned char loop = 0;
+	for (;loop < sizeof(configList);loop++) {
+		*indexBuff = get_post_item(buff,configList[loop]);
+		if (*indexBuff != NULL) {
+			printf("\r\n %s \r\n ",*indexBuff);
+			return (CONFIG_TYPE) (loop);
+		}
+	}
+}	
+
+void 
+fillin_alarm_param(const char* buff,alarm_param* alm_param,
+const char* clock,const char* repeat,const char* sleep,const char* time)
+{
+	unsigned char loop = 0;
+	char dayIndex = 0;
+	char getRepeat[10] = {0};
+	char getTime[10] = {0};
+	char getSleep[10] = {0};
+	char* getClock = NULL;
+	strcpy(getRepeat,get_post_item(buff,repeat));
+	strcpy(getSleep,get_post_item(buff,sleep));
+	strcpy(getTime,get_post_item(buff,time));
+	getClock = get_post_item(buff,clock);
+	if (getClock != NULL) {
+		printf("\r\ngetClock %s getRepeat %s,getSleep %s,getTime %s",getClock,getRepeat,getSleep,getTime);
+		if (getRepeat != NULL && !IS_EQUAL("null",getRepeat)) {
+			dayIndex = atoi(getRepeat);
+			printf("day index %d",dayIndex);
+			for (loop = 0;loop < 7;loop++) {
+				if (dayIndex & (1 << loop)) {
+					if (IS_EQUAL("true",getClock)) {
+						alm_param[loop * 3].isOpen = true;
+					} else {
+						alm_param[loop * 3].isOpen = false;
+					}
+					alm_param[loop * 3].isOpenSnooze = IS_EQUAL("true",getSleep);
+					alm_param[loop * 3].alarmTime = atoi(getTime);
+					alm_param[loop * 3].defaultAlarmTime = atoi(getTime);	
+					
+				}
+			}
+		}								
+	} 
+}
+
+void 
+dump_config_param()
+{
+	unsigned char alarm_loop = 0;
+	printf(" brightness %d, nowtime %d, temp %d, city %d \r\n",
+			configParam.brightness,
+			configParam.nowtime,
+			configParam.temp,
+			configParam.city);
+	for (;alarm_loop < 21;alarm_loop++) {
+	serial_printf(" alram default time: day:%d,default:%d,alarm:%d,snooze:%d,snooze open %d,isopen:%d\n",
+					configParam.alm_param[alarm_loop].alarmDay,
+					configParam.alm_param[alarm_loop].defaultAlarmTime,
+					configParam.alm_param[alarm_loop].alarmTime,
+					configParam.alm_param[alarm_loop].snoozeDelay,
+					configParam.alm_param[alarm_loop].isOpenSnooze,
+					configParam.alm_param[alarm_loop].isOpen);	
+		}
+}
+parse_get_data(const char* buff,t_config_param* configParam)
+{
+	unsigned int loop = 0;
+	char cityNum[10] = {0};
+	CONFIG_TYPE index = MAX_INDEX;
+	char* indexBuff = NULL;
+	index = get_config_index(buff,&indexBuff);
+	switch (index) {
+		case BRIGHTNESS:
+			configParam->brightness = (char) ((*indexBuff) - '0') - 1;
+			break;
+		case NOWTIME:
+			configParam->nowtime = (strcmp(indexBuff,"on") == 0);
+			break;
+		case TEMP:
+			configParam->temp = (*indexBuff == 'C');
+			break;
+		case CITY:			
+			for (;loop < sizeof(cityTable);loop++) {
+				if (strcmp(indexBuff,cityTable[loop]) == 0) {
+					configParam->city = cityIdTable[0][loop];
+				} else {
+					configParam->city = cityIdTable[0][0];	
+				}
+			}
+			
+			break;
+		case CLOCK1:
+			fillin_alarm_param(buff,&configParam->alm_param[0],configList[CLOCK1],
+								configList[REPEAT1],configList[SLEEP1],configList[TIME1]);
+			fillin_alarm_param(buff,&configParam->alm_param[1],configList[CLOCK2],
+								configList[REPEAT2],configList[SLEEP2],configList[TIME2]);
+			fillin_alarm_param(buff,&configParam->alm_param[2],configList[CLOCK3],
+								configList[REPEAT3],configList[SLEEP3],configList[TIME3]);
+			break;
+		case CLOCK2:
+			fillin_alarm_param(buff,&configParam->alm_param[1],configList[CLOCK2],
+								configList[REPEAT2],configList[SLEEP2],configList[TIME2]);
+			fillin_alarm_param(buff,&configParam->alm_param[2],configList[CLOCK3],
+								configList[REPEAT3],configList[SLEEP3],configList[TIME3]);
+			break;
+		case CLOCK3:
+			fillin_alarm_param(buff,&configParam->alm_param[2],configList[CLOCK3],
+								configList[REPEAT3],configList[SLEEP3],configList[TIME3]);
+			break;
+		case CONFIG_PARAM:
+			
+			sdkParam.nt_param.isOpen = configParam->nowtime;
+			//sdkParam.timeFmt_param.fmt = 
+			sdkParam.wth_parma.cityId = configParam->city;
+			sdkParam.temperature = configParam->temp;
+			sdkParam.brightness = configParam->brightness;
+			memcpy(sdkParam.alm_param,configParam->alm_param,ALARM_NUM * sizeof(alarm_param));
+			
+			config_set(&sdkParam);
+			config_submit();	
+			config_dump();
+			reboot(1);
+			
+			break;
+		case CLOSE:
+			appCfgPrm.skPam.clientMsg.clientFdIndex -= 1;
+			close(appCfgPrm.skPam.clientMsg.clientFd[appCfgPrm.skPam.clientMsg.clientFdIndex]);
+			appCfgPrm.skPam.clientMsg.clientFd[appCfgPrm.skPam.clientMsg.clientFdIndex] = -1;
+			break;
+		default:
+			break;
+	}
+
+}
+
+void
+handle_data(char* buff,int len)
+{
+	printf("\r\n %s \r\n",buff);
+	parse_get_data(buff,&configParam);
+	dump_config_param();
+}
+
+void receive_data()
+{
+	char i = 0;
+	char ret = -1;
+	char retry = 0;
+	unsigned char revBuff[512];
+	fd_set fdSet;
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	memset(revBuff,0,sizeof(revBuff));
+	
+	while(1){
+		//http_client_select(&fdSet,&appCfgPrm.skPam.clientMsg,handle_data);
+		
+		FD_ZERO(&fdSet);
+		for (i = 0;i < MAX_SERVER_NUM;i++) {
+			if (appCfgPrm.skPam.clientMsg.clientFd[i] == -1) {
+				sys_msleep(100 * 1);
+				continue;
+			}else{
+				FD_SET(appCfgPrm.skPam.clientMsg.clientFd[i],&fdSet);
+				ret = select(appCfgPrm.skPam.clientMsg.clientFd[i] + 1,&fdSet,NULL,NULL,&tv);
+				if (ret > 0) {
+					memset(revBuff,0,512);
+					ret = read(appCfgPrm.skPam.clientMsg.clientFd[i],&revBuff,sizeof(revBuff));	
+					//printf("receive data is %s",revBuff);
+					if (strcmp(revBuff,"reboot") == 0) {
+						debug("\r\n========starting ota update===========\r\n");
+						send_event(REBOOT_EVENT);
+					}
+					handle_data(revBuff,ret);
+				} else {
+					;
+					//printf("select fail \r\n");
+				}
+			}
+		}
+		
+	}	
+}
+void dump_client_message()
+{
+	printf("clientPort is %d,clientd IP is %s",
+			ntohs(appCfgPrm.skPam.cltAddr.sin_port),
+			inet_ntoa(appCfgPrm.skPam.cltAddr.sin_addr)
+			);
+}
+
+static char app_server_select()
+{
+	char ret = -1;
+	fd_set fdSet;
+	struct timeval tv;
+	FD_ZERO(&fdSet);
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	FD_SET(appCfgPrm.skPam.srvFd,&fdSet);
+
+	ret = select(appCfgPrm.skPam.srvFd + 1,&fdSet,NULL,NULL,&tv);
+	if(ret < 0){
+		printf("\r\n===========socket server select failed=================\r\n");
+		return -1;
+	}
+	if(FD_ISSET(appCfgPrm.skPam.srvFd,&fdSet)){
+		return 1;	
+	}else{
+		return -1;
+	}
+}
+static inline void app_accept()
+{ 
+	//selet polling
+	char ret = -1;
+	ret = app_server_select();
+	if(ret > 0){
+		if(appCfgPrm.skPam.clientMsg.clientFdIndex > 5){
+			assert("\r\n========client number overflow=======\r\n");
+			return;
+		}
+		appCfgPrm.skPam.clientMsg.clientFd[appCfgPrm.skPam.clientMsg.clientFdIndex++] = accept(appCfgPrm.skPam.srvFd,(struct sockaddr* )&(appCfgPrm.skPam.cltAddr),&appCfgPrm.skPam.skaddrLen);
+		if(appCfgPrm.skPam.clientMsg.clientFd[appCfgPrm.skPam.clientMsg.clientFdIndex -1] < 0){
+			printf("======get clientfd fail==========================\n");
+		}else{
+			dump_client_message();
+		}
+	}
+}
+char create_socket_server()
+{
+	int ret = -1;
+	init_socket_param();
+	
+	ret = start_up();
+	if(ret < 0){
+		printf("\r\n===========start up fail=================\r\n");
+	}
+	xTaskCreate(receive_data,"socketServerData",1024 * 4,0,5,0);
+	return ret;
+}
+
+inline void init_config_param()
+{
+	memcpy(configParam.alm_param,sdkParam.alm_param,ALARM_NUM * sizeof(alarm_param));
+	configParam.brightness = sdkParam.brightness;
+	configParam.city = sdkParam.wth_parma.cityId;
+	configParam.nowtime = sdkParam.nt_param.isOpen;
+	configParam.temp = sdkParam.temperature;
+	
+	
+}
+void config_param()
+{
+	printf("\r\n=========starting config param============\r\n");
+	appCfgPrm.skPam.skaddrLen = sizeof(struct sockaddr_in);
+	appCfgPrm.skPam.srvPort = 80;
+	create_socket_server();
+	config_load();
+	config_get(&sdkParam);
+	init_config_param();
+	while(1) {
+		app_accept();
+	}
+}
+#endif
+

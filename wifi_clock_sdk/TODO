@@ -1,0 +1,19 @@
+Project:
+  ✔ mushan project fixs some bugs @done(18-01-24 10:13)
+  ✔ keyi version add new feature @done(18-01-26 13:37)
+  ☐ more information please see sdk_config.h
+Version:
+  ☐ latest stabilish version please see git tags!@critical  
+
+Hotfix:
+    ✔ @done(18-01-24 10:23) none
+Fixme:
+  ✔ fix humidity problem @high @critical @done(18-01-26 11:46)
+  ☐ improve wifi connection stability @low 
+  ✔ improve web configuration stablility @low @done(18-01-26 16:05)
+
+Todo:
+  
+  
+CodeStyle:
+  ☐ vscode default code format
