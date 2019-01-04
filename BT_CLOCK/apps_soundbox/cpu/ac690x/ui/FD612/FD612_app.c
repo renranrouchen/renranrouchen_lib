@@ -1,0 +1,814 @@
+/*-------------------------------------------------------------------------
+*@Author		Zwxf
+*@Email			Zwxf.cw@gmail.com
+*@Brief
+*@FileName		FD612_app.c
+*@Data			2017/10/25 16:32:42
+-------------------------------------------------------------------------*/
+#include <sdk_cfg.h>
+#include "ui/ui_api.h"
+#if UI_ENABLE
+
+#include "ui/ui_common.h"
+#include "fm_radio.h"
+#include "dec/decoder_phy.h"
+#include "music_ui.h"
+#include "music.h"
+#include "timer.h"
+#include "key_drv/key.h"
+#include "file_operate/file_op.h"
+//#include "play_file.h"
+#include "dac/dac.h"
+#include "key_drv/key_drv_ad.h"
+
+#if (ALL_FUNCTION_VERSION == 1)
+#include "rtc_setting.h"
+#endif
+#if REC_EN
+    #include "encode/encode.h"
+#endif
+#if FD612_EN
+#include "FD612_app.h"
+#include <FD612/FD612Drv.H>
+#if (PRODUCT_VERSION_KEYI == 1)
+#include "keyi_rtc_app.h"
+#endif
+t_FD612_param FD612Param;
+#define HALF_FIRST_FLASH_BUFF   FD612Param.buff[0]
+#define HALF_SEC_FLASH_BUFF		FD612Param.buff[1]
+#define HALF_FOURTH_FLASH_BUFF  FD612Param.buff[3]
+#define COLON_FLASH_BIT			0x80
+#define ALARM_ICON_BUFF			FD612Param.buff[10]
+
+#define TEMP_RESIST_TABLE_SIZE 53
+#define OVER_MIN_TEMP_INDEX 0
+#define OVER_MAX_TEMP_INDEX 52
+const unsigned int temp_resist_table[TEMP_RESIST_TABLE_SIZE] = {
+    745,
+    755,747,738,727,719,710,700,689,678,668,
+    657,647,638,627,616,605,594,582,572,561,
+    549,539,527,518,505,494,484,474,464,452,
+    442,432,421,412,402,391,383,373,363,354,
+    345,336,327,319,309,302,293,286,279,272,
+    263,253
+
+};
+
+const u8 playmodestr[][5] =
+{
+    " ALL",
+    "Fold",
+    " ONE",
+    " rAn",
+};
+
+const u8 menu_string[][5] =
+{
+    " HI ",
+    "Lod ",
+    "bLUE",
+    " PC ",
+    " UP ",
+    " dN ",
+    " AUX",
+    "-AL-"
+};
+const u8 other_string[][5]=
+{
+    "Eq ",
+    "V ",
+    "P ",
+    " NOP",
+    " rec",
+};
+
+/*   S E T _ B U F F _ P O S I T I O N   */
+/*-------------------------------------------------------------------------
+*@param
+*@Author			Jerry
+*@Email			Zwxf.cw@gmail.com
+*@Brief			reset buff position
+-------------------------------------------------------------------------*/
+void set_buff_position(u8 pos)
+{
+	FD612Param.buffIndex = pos;
+}
+
+/*   S H O W _ S T R I N G   */
+/*-------------------------------------------------------------------------
+*@param
+*@Author			Jerry
+*@Email			Zwxf.cw@gmail.com
+*@Brief
+-------------------------------------------------------------------------*/
+static void inline show_string(u8* str)
+{
+#if 0
+    printf("%s\n",str);
+    /*check out of range */
+	while(*str != '\0') {
+		if (FD612Param.buffIndex > MAX_BUFF_SIZE) {
+			FD612Param.buffIndex = 0;
+		}
+
+		FD612Param.buff[FD612Param.buffIndex++] = DispGetCode(*str++);
+	}
+#else //upside down
+    int len;
+    printf("%s\n",str);
+
+	/*check out of range */
+	if (FD612Param.buffIndex > 3)
+        FD612Param.buffIndex = 0;
+
+    len = 3 - FD612Param.buffIndex;
+	while(*str != '\0') {
+
+		FD612Param.buff[len] = DispGetCode(*str++);
+        //printf("%s, %d, FD612Param.buff[%d] = 0x%x\n", __FUNCTION__, __LINE__, len , FD612Param.buff[len]);
+        len--;
+
+		if (len < 0)
+            break;
+
+		FD612Param.buffIndex++;
+	}
+
+#endif
+	/* Debug msg */
+#if 0
+	for (tmp = 0;tmp < FD612Param.buffIndex;tmp++) {
+  		printf("buff[%d]= 0x%x!!!\n",tmp,FD612Param.buff[tmp]);
+	}
+#endif
+}
+/**
+ * @brief
+ * @note
+ * @param  data:
+ * @retval
+ */
+static char show_char(u8 data)
+{
+	if (FD612Param.buffIndex > MAX_BUFF_SIZE) {
+		FD612Param.buffIndex = 0;
+		return -1;
+	}
+	FD612Param.buff[FD612Param.buffIndex++] = data;
+	return 1;
+}
+
+void FD612_show_string_menu(u8 menu)
+{
+    if(menu >= (sizeof(menu_string)/sizeof(u8) * 5))
+    {
+        printf("*strid(%d) is over!\n",menu);
+    }
+    else {
+//    	printf("MAIN=%s\n",(u8* )menu_string[menu]);
+        show_string((u8 *)menu_string[menu]);
+    }
+}
+/**
+ * @brief
+ * @note
+ * @param  vol:
+ * @retval None
+ */
+void FD612_show_volume(s32 vol)
+{
+	u8 tmp_vol;
+
+	tmp_vol = (u8)vol;
+	show_string((u8 *)other_string[1]);
+	itoa2(tmp_vol);
+	show_string((u8 *)bcd_number);
+}
+/**
+ * @brief
+ * @note
+ * @retval None
+ */
+void FD612_clear_icon(void)
+{
+	FD612Param.flashBit = 0;
+}
+static inline void FD612_show_dev(UI_DEVICE dev)
+{
+	;
+}
+void FD612_show_music_main(void)
+{
+    //led7_show_string((u8*)"MUSI");
+    u32 play_time;
+    MUSIC_DIS_VAR *music_var;
+
+    music_var = (MUSIC_DIS_VAR*)UI_var.ui_buf_adr;
+
+    if(music_var)
+    {
+        /*Music Play time info*/
+        play_time = music_var->play_time;
+
+        itoa2(play_time/60);
+        show_string((u8 *)bcd_number);
+
+        itoa2(play_time%60);
+        show_string((u8 *)bcd_number);
+
+        /* led7_show_dev(); */
+		FD612_show_dev(music_var->ui_curr_device);
+		/*TODO other data */
+    }
+}
+
+void FD612_show_eq(s32 arg)
+{
+    u8 eq_cnt;
+    eq_cnt = (u8)arg;
+    show_string((u8 *)other_string[0]);
+    show_char(eq_cnt % 10 + '0');
+}
+
+void FD612_show_filenumber(void)
+{
+    MUSIC_DIS_VAR *music_var;
+
+    music_var = (MUSIC_DIS_VAR*)UI_var.ui_buf_adr;
+
+    if(music_var)
+    {
+        /*Music File Number info*/
+        //printf("ui_music.ui_play_file_num = %u----\n",ui_music.ui_play_file_num);
+        itoa4(music_var->ui_curr_file);
+        show_string((u8 *)bcd_number);
+    }
+}
+void FD612_show_playmode(s32 arg)
+{
+    u8 pm_cnt;
+    pm_cnt = (u8)arg;
+    show_string((u8 *)&playmodestr[pm_cnt-FOP_MAX-1][0]);
+}
+
+void FD612_show_fm_main(void)
+{
+    /*FM - Frequency*/
+ #if 1
+    FM_MODE_VAR * fm_var;
+
+    if(!UI_var.ui_buf_adr)
+        return;
+
+    fm_var = *(FM_MODE_VAR **)UI_var.ui_buf_adr;
+
+    if(fm_var)
+    {
+        itoa4(fm_var->wFreq);
+
+        if (fm_var->wFreq <= 999)
+            bcd_number[0] = ' ';
+
+        show_string((u8 *)bcd_number);
+
+#if REC_EN
+        RECORD_OP_API * rec_var_p;
+        REC_CTL * rec_ctl_var;
+
+        if((fm_var->fm_rec_op)&&(*(RECORD_OP_API **)(fm_var->fm_rec_op)))
+        {
+            rec_var_p = *(RECORD_OP_API **)fm_var->fm_rec_op;
+            rec_ctl_var = rec_var_p->rec_ctl;
+
+            if((rec_ctl_var)&&(ENC_STOP != rec_ctl_var->enable))
+            {
+				LED_STATUS &= ~(LED_PLAY | LED_PAUSE);
+				LED_STATUS &= ~(LED_SD|LED_USB);
+
+                /* led7_show_dev(); */
+				FD612_show_dev(rec_ctl_var->curr_device);
+                if (ENC_STAR == rec_ctl_var->enable)
+                    LED_STATUS |= LED_PLAY;
+                else if(ENC_PAUS == rec_ctl_var->enable)
+                    LED_STATUS |= LED_PAUSE;
+            }
+
+        }
+#endif
+    }
+#endif // 0
+}
+
+void FD612_show_fm_station(void)
+{
+//    /*FM - Station*/
+#if 1
+    FM_MODE_VAR * fm_var;
+
+    if(!UI_var.ui_buf_adr)
+        return;
+
+    fm_var = *(FM_MODE_VAR **)UI_var.ui_buf_adr;
+
+    if(fm_var)
+    {
+        show_string((u8 *)other_string[2]);
+        itoa2(fm_var->wFreChannel);
+        show_string((u8 *)bcd_number);
+    }
+#endif
+}
+
+#if	RTC_CLK_EN
+#if (ALL_FUNCTION_VERSION == 1)
+/*   R   T   C _ S H O W _ N O R M A L   */
+/*-------------------------------------------------------------------------
+*@param
+*@Author			Jerry
+*@Email			Zwxf.cw@gmail.com
+*@Brief
+-------------------------------------------------------------------------*/
+u8 timeFormat = TIME_FORMAT_24_EN;
+static void inline RTC_show_normal(RTC_TIME* ui_time)
+{
+	unsigned char hour = ui_time->bHour;
+#if (TIME_FORMAT == 1)
+	if (timeFormat != TIME_FORMAT_24_EN && ui_time->bHour > 12) {
+		hour = hour - 12;
+	}
+#endif
+
+	itoa2(hour);
+	show_string((u8 *)bcd_number);
+	itoa2(ui_time->bMin);
+	show_string((u8 *)bcd_number);
+//	printf("half_sec=%d \n",get_sys_halfsec());
+	if (get_sys_halfsec()) {
+		HALF_SEC_FLASH_BUFF |= COLON_FLASH_BIT;
+	} else {
+		HALF_SEC_FLASH_BUFF &= ~(COLON_FLASH_BIT);
+	}
+}
+#endif /* (ALL_FUNCTION_VERSION == 1) */
+
+#if (PRODUCT_VERSION_KEYI == 1)
+static void inline time_show_normal(rtc_time_t* rtcTime)
+{
+	itoa2(rtcTime->hour);
+	show_string((u8 *)bcd_number);
+	itoa2(rtcTime->min);
+	show_string((u8 *)bcd_number);
+//	printf("half_sec=%d \n",get_sys_halfsec());
+	if (get_sys_halfsec()) {
+		HALF_SEC_FLASH_BUFF |= COLON_FLASH_BIT;
+	} else {
+		HALF_SEC_FLASH_BUFF &= ~(COLON_FLASH_BIT);
+	}
+	/*TODO:
+	*check snooze state and display(bling) & check alarm state(light)
+	*/
+	printf("show rtc time !!!\n");
+}
+
+int get_temp_value(void)
+{
+#if KEY_AD_EN
+
+    u32 temp_adc_value = 0;
+    u16 average_temp_adc_value = 0;
+    u8 i;
+
+    for (i=0;i<8;i++)
+        temp_adc_value += adc_value[AD_CH_TEMP];
+
+    average_temp_adc_value = temp_adc_value / 8;
+
+    printf("%s, %d, temp_adc_value %d, average_temp_adc_value %d\n", __FUNCTION__, __LINE__, temp_adc_value, average_temp_adc_value);
+
+    for (i=0;i<TEMP_RESIST_TABLE_SIZE;i++){
+        if (average_temp_adc_value > temp_resist_table[i])
+            break;
+    }
+
+    if (0 == i){
+        printf("%s,%d, temp less than 0\n", __FUNCTION__, __LINE__);
+        return -1;
+    }else if (52 == i) {
+        printf("%s,%d, temp large than 50\n", __FUNCTION__, __LINE__);
+        return -1;
+    }else {
+        printf("%s,%d, temp is %d\n", __FUNCTION__, __LINE__, i-1);
+        return (i-1);
+    }
+ #else
+    return 0;
+#endif
+}
+
+static void time_show_switch_display(time_setting_t* rtc_var,rtc_time_t* rtcTime)
+{
+    int tempreture = 0;
+   	switch (rtc_var->timeDisplayPosition) {
+    case TIME_YEAR_DISPLAY:
+        printf("year display\n");
+        itoa4(rtcTime->year + 2000);
+		show_string((u8 *)bcd_number);
+        break;
+    case TIME_DATE_DISPLAY:
+        printf("date display\n");
+        itoa2(rtcTime->day);
+        show_string((u8 *)bcd_number);
+        itoa2(rtcTime->month);
+        show_string((u8 *)bcd_number);
+        HALF_FIRST_FLASH_BUFF |= COLON_FLASH_BIT;
+        break;
+    case TIME_TIME_DISPLAY:
+        printf("time display \n");
+        itoa2(rtcTime->hour);
+        show_string((u8 *)bcd_number);
+        itoa2(rtcTime->min);
+        show_string((u8 *)bcd_number);
+        if (get_sys_halfsec()) {
+            HALF_SEC_FLASH_BUFF |= COLON_FLASH_BIT;
+        } else {
+            HALF_SEC_FLASH_BUFF &= ~(COLON_FLASH_BIT);
+        }
+        break;
+    case TIME_TEMP_DISPLAY:
+        printf("temperature display \n");
+        tempreture = get_temp_value();
+        if (tempreture < 0) {
+            show_string((u8 *)"--");
+        }
+        else {
+            itoa2(tempreture);
+            show_string((u8 *)bcd_number);
+        }
+        show_string((u8 *)("  "));
+
+        HALF_FIRST_FLASH_BUFF |= COLON_FLASH_BIT;
+        break;
+    }
+
+    if (rtc_var->alarmConfig.alarmSwitch)
+        HALF_FOURTH_FLASH_BUFF |= COLON_FLASH_BIT;
+    else
+        HALF_FOURTH_FLASH_BUFF &= ~(COLON_FLASH_BIT);
+}
+
+/*   R   T   C _ S H O W _ S E T T I N G   */
+/*-------------------------------------------------------------------------
+*@param
+*@Author			Jerry
+*@Email			Zwxf.cw@gmail.com
+*@Brief
+-------------------------------------------------------------------------*/
+static void time_show_setting(time_setting_t* rtc_var,rtc_time_t* rtcTime,rtc_time_t* alarmTime)
+{
+	u8 blankTwo[3] = "  ";
+	u8 blankFour[5] = "    ";
+	switch (rtc_var->timeSettingPosition) {
+		case TIME_YEAR_SETTING:
+			printf("year setting \n");
+			itoa4(rtcTime->year + 2000);
+			show_string((u8 *)bcd_number);
+			if (get_sys_halfsec()) {
+				set_buff_position(0);
+				show_string((u8* )blankFour);
+			}
+			break;
+		case TIME_MONTH_SETTING:
+			printf("month setting \n");
+			itoa2(rtcTime->month);
+			show_string((u8 *)bcd_number);
+			itoa2(rtcTime->day);
+			show_string((u8 *)bcd_number);
+			if (get_sys_halfsec()) {
+				set_buff_position(0);
+				show_string((u8* )blankTwo);
+			}
+			break;
+		case TIME_DAY_SETTING:
+			printf("day setting \n");
+			itoa2(rtcTime->month);
+			show_string((u8 *)bcd_number);
+			itoa2(rtcTime->day);
+			show_string((u8 *)bcd_number);
+			if (get_sys_halfsec()) {
+				set_buff_position(2);
+				show_string((u8* )blankTwo);
+			}
+			break;
+		case TIME_HOUR_SETTING:
+			printf("hour setting \n");
+			itoa2(rtcTime->hour);
+			show_string((u8 *)bcd_number);
+			itoa2(rtcTime->min);
+			show_string((u8 *)bcd_number);
+			/* Enable flash icon */
+			HALF_SEC_FLASH_BUFF |= COLON_FLASH_BIT;
+			if (get_sys_halfsec()) {
+				set_buff_position(0);
+				show_string((u8* )blankTwo);
+			}
+
+			break;
+		case TIME_MIN_SETTING:
+			printf("min setting \n");
+			itoa2(rtcTime->hour);
+			show_string((u8 *)bcd_number);
+			itoa2(rtcTime->min);
+			show_string((u8 *)bcd_number);
+			/* Enable flash icon */
+			HALF_SEC_FLASH_BUFF |= COLON_FLASH_BIT;
+			if (get_sys_halfsec()) {
+				set_buff_position(2);
+				show_string((u8* )blankTwo);
+			}
+			break;
+		/* Display AL */
+		case TIME_ALARM_ICON_SETTING:
+			printf("icon setting \n");
+			FD612_show_string_menu(7);
+			break;
+		case ALARM_HOUR_SETTING:
+			printf("alarm hour setting \n");
+			itoa2(alarmTime->hour);
+			show_string((u8 *)bcd_number);
+			itoa2(alarmTime->min);
+			show_string((u8 *)bcd_number);
+			if (get_sys_halfsec()) {
+				set_buff_position(0);
+				show_string((u8* )blankTwo);
+			}
+			break;
+		case ALARM_MIN_SETTING:
+			printf("alarm min setting \n");
+			itoa2(alarmTime->hour);
+			show_string((u8 *)bcd_number);
+			itoa2(alarmTime->min);
+			show_string((u8 *)bcd_number);
+			if (get_sys_halfsec()) {
+				set_buff_position(2);
+				show_string((u8* )blankTwo);
+			}
+			break;
+	}
+}
+
+/*   F   D 6 2 8 _ S H O W _   R   T   C _ M A I N   */
+/*-------------------------------------------------------------------------
+*@param
+*@Author			Jerry
+*@Email			Zwxf.cw@gmail.com
+*@Brief
+-------------------------------------------------------------------------*/
+static void set_current_time_brightness(rtc_time_t* rtcTime)
+{
+	if (rtcTime->hour < 18 && rtcTime->hour > 8) {
+		FD612Param.brightness = 8;
+	} else {
+		FD612Param.brightness = 4;
+	}
+}
+
+static void rtc_show_alarm_statue(alarm_config_t* alarm_config)
+{
+	/* clear icon */
+	ALARM_ICON_BUFF &= ~(COLON_FLASH_BIT);
+	if (alarm_config->alarmSwitch == true && alarm_config->snoozeState == false) {
+		ALARM_ICON_BUFF |= COLON_FLASH_BIT;
+	}
+	if (alarm_config->snoozeState == true && get_sys_halfsec()) {
+		ALARM_ICON_BUFF |= COLON_FLASH_BIT;
+	}
+}
+#endif
+void FD612_show_RTC_main(void)
+{
+#if (PRODUCT_VERSION_KEYI == 1)
+    time_setting_t* rtc_var;
+    rtc_time_t* rtcTime;
+	rtc_time_t* alarmTime;
+    rtc_var = (time_setting_t* )UI_var.ui_buf_adr;
+	rtcTime = rtc_var->currTime;
+	alarmTime = rtc_var->alarmConfig.currAlarm;
+#endif
+#if (ALL_FUNCTION_VERSION == 1)
+	RTC_SETTING* rtc_var;
+	RTC_TIME* rtcTime ;
+	RTC_TIME* alarmTime;
+	rtc_var = (RTC_SETTING* )UI_var.ui_buf_adr;
+	rtcTime = rtc_var->calendar_set.curr_rtc_time;
+	alarmTime = rtc_var->alarm_set.curr_alm_time;
+#endif
+//	printf("%s!!! \n",__func__);
+    if (rtc_var) {
+		if (
+#if (PRODUCT_VERSION_KEYI == 1)
+			rtc_var->rtcMode == RTC_DISPLAY
+#endif
+#if (ALL_FUNCTION_VERSION == 1)
+			rtc_var->rtc_set_mode == RTC_DISPLAY
+#endif
+			) {
+#if (ALL_FUNCTION_VERSION == 1)
+			RTC_show_normal(rtcTime);
+#endif
+#if (PRODUCT_VERSION_KEYI == 1)
+			time_show_switch_display(rtc_var,rtcTime);
+			set_current_time_brightness(rtcTime);
+			rtc_show_alarm_statue(&rtc_var->alarmConfig);
+#endif
+		} else if (
+#if (PRODUCT_VERSION_KEYI == 1)
+			rtc_var->rtcMode == TIME_SET_MODE
+#endif
+#if (ALL_FUNCTION_VERSION == 1)
+			rtc_var->rtc_set_mode == TIME_SET_MODE
+#endif
+			) {
+#if (PRODUCT_VERSION_KEYI == 1)
+			time_show_setting(rtc_var,rtcTime,alarmTime);
+			set_current_time_brightness(rtcTime);
+#endif
+		}
+
+	} else {
+		printf("NULL POINTER!!! \n");
+	}
+}
+#endif /* RTC_CLK_EN */
+
+//do not open it current
+#if REC_EN
+#if 0
+
+/*----------------------------------------------------------------------------*/
+/**@brief   REC ��ʾ����
+   @param   void
+   @return  void
+   @note    void led7_show_rec_start(void)
+*/
+/*----------------------------------------------------------------------------*/
+static void FD612_show_rec_start(REC_CTL * rec_ctl_var)
+{
+    u32 rec_time;
+
+//    LED_STATUS &= ~(LED_PLAY | LED_PAUSE);
+//    if(rec_ctl_var)
+    {
+        rec_time = rec_ctl_var->file_info.enc_time_cnt;
+
+        itoa2(rec_time/60);
+        show_string((u8 *)bcd_number);
+
+        itoa2(rec_time%60);
+        show_string((u8 *)bcd_number);
+
+        /* led7_show_dev(); */
+		FD612_show_dev(rec_ctl_var->curr_device);
+
+        LED_STATUS |= LED_2POINT; //| LED_PLAY;
+
+        if (ENC_STAR == rec_ctl_var->enable)
+            LED_STATUS |= LED_PLAY;
+        else if (ENC_PAUS == rec_ctl_var->enable)
+            LED_STATUS |= LED_PAUSE;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/**@brief   REC ��ʾ����
+   @param   void
+   @return  void
+   @note    void led7_show_rec_main(void)
+*/
+/*----------------------------------------------------------------------------*/
+void FD612_show_rec_main(void)
+{
+    RECORD_OP_API * rec_var_p;
+    REC_CTL * rec_ctl_var;
+
+    LED_STATUS &= ~(LED_PLAY | LED_PAUSE);
+    LED_STATUS &= ~LED_2POINT; //| LED_PLAY;
+    LED_STATUS &= ~(LED_SD|LED_USB);
+
+    if(UI_var.ui_buf_adr)
+    {
+        rec_var_p = *(RECORD_OP_API **)UI_var.ui_buf_adr;
+        if(rec_var_p)
+        {
+            rec_ctl_var = rec_var_p->rec_ctl;
+            if((rec_ctl_var)&&(ENC_STOP != rec_ctl_var->enable))
+            {
+                FD612_show_rec_start(rec_ctl_var);
+                return;
+            }
+        }
+    }
+
+    show_string((u8 *)other_string[4]);
+}
+#endif
+#endif /* REC_EN */
+
+void FD612_show_linin_main(u8 menu)
+{
+    FD612_show_string_menu(menu);
+
+#if REC_EN
+
+    RECORD_OP_API * rec_var_p;
+    REC_CTL * rec_ctl_var;
+
+    rec_var_p = *(RECORD_OP_API **)UI_var.ui_buf_adr;
+    if((UI_var.ui_buf_adr)&&(rec_var_p))
+    {
+        rec_ctl_var = rec_var_p->rec_ctl;
+
+        LED_STATUS &= ~(LED_PLAY | LED_PAUSE);
+        LED_STATUS &= ~(LED_SD|LED_USB);
+
+        if((menu == MENU_AUX_MAIN)||(menu == MENU_BT_MAIN))
+        {
+            if((rec_ctl_var)&&(ENC_STOP !=rec_ctl_var->enable))
+            {
+                if (ENC_STAR == rec_ctl_var->enable)
+                    LED_STATUS |= LED_PLAY;
+                else if(ENC_PAUS == rec_ctl_var->enable)
+                    LED_STATUS |= LED_PAUSE;
+
+				FD612_show_dev(rec_ctl_var->curr_device);
+            }
+        }
+    }
+#endif /* REC_EN */
+}
+static void inline FD612_clear()
+{
+	unsigned char buff[12] = {0,};
+	FD612_write_string(0,buff);
+}
+const char intenceTable[8] = {FD612_INTENS1,FD612_INTENS2,FD612_INTENS3,FD612_INTENS4,FD612_INTENS5,FD612_INTENS6,FD612_INTENS7,FD612_INTENS8};
+static void inline set_brightness()
+{
+	FD612_DispStateWr(intenceTable[FD612Param.brightness - 1] | FD612_DISP_ON);
+}
+void FD612_scan(void *param)
+{
+	//unsigned char writeBuff[12] = {0,},buffIndex = 0;
+	// for (buffIndex = 0;buffIndex < MAX_BUFF_SIZE;buffIndex++) {
+		// writeBuff[buffIndex] = FD612Param.buff[buffIndex];
+	// }
+#if (FD628_NEGA_DISP == 1)
+	writeBuff[0] = FD612Param.buff[0];
+	writeBuff[2] = FD612Param.buff[1];
+	writeBuff[4] = FD612Param.buff[2];
+	writeBuff[6] = FD612Param.buff[3];
+#else
+#if 0
+	FD612_PotiveTNage(0,FD612Param.buff[0]);
+	FD612_PotiveTNage(2,FD612Param.buff[1]);
+	FD612_PotiveTNage(4,FD612Param.buff[2]);
+	FD612_PotiveTNage(6,FD612Param.buff[3]);
+#else
+	FD612_PotiveTNage(0,FD612Param.buff[0]);
+	FD612_PotiveTNage(1,FD612Param.buff[1]);
+	FD612_PotiveTNage(2,FD612Param.buff[2]);
+	FD612_PotiveTNage(3,FD612Param.buff[3]);
+#endif
+#endif
+	// writeBuff[0] = 0xc0;
+	// writeBuff[2] = 0xc0;
+	// writeBuff[4] = 0xc0;
+	// writeBuff[6] = 0xc0;
+//    FD612_clear();
+	set_brightness();
+	// FD612_write_string(0,writeBuff);
+//	printf("scan handle.... \n");
+	FD612_Refresh();
+}
+
+static void inline param_init()
+{
+	FD612Param.brightness = 4;
+	FD612Param.buffIndex = 0;
+	FD612Param.flashBit = 0;
+}
+void FD612_init(void)
+{
+	s32 ret = 1;
+	FD612_Init();
+	param_init();
+
+	/* Register UI display callback function */
+	ret = timer_reg_isr_fun(timer0_hl,250,FD612_scan,NULL);
+	if(ret != TIMER_NO_ERR)
+	{
+		printf("FD612_scan err = %x\n",ret);
+	}
+}
+#endif /* FD612_EN */
+
+#endif /* UI_ENABLE*/

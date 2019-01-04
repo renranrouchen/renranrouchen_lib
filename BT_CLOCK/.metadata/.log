@@ -1,0 +1,28 @@
+!SESSION 2019-01-02 16:47:36.365 -----------------------------------------------
+eclipse.buildId=4.4.1.M20140925-0400
+java.version=1.8.0_25
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=zh_CN
+Framework arguments:  -product org.eclipse.epp.package.cpp.product
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product org.eclipse.epp.package.cpp.product
+
+!ENTRY org.eclipse.core.resources 4 77 2019-01-02 16:48:52.109
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2019-01-02 16:48:52.109
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2019-01-02 16:48:52.109
+!MESSAGE D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK overlaps the workspace location: D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK
+
+!ENTRY org.eclipse.core.resources 4 77 2019-01-02 16:49:41.878
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2019-01-02 16:49:41.878
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2019-01-02 16:49:41.878
+!MESSAGE D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK overlaps the workspace location: D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK
+
+!ENTRY org.eclipse.core.resources 4 77 2019-01-02 16:50:44.428
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2019-01-02 16:50:44.428
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2019-01-02 16:50:44.428
+!MESSAGE D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK overlaps the workspace location: D:\1海矽\杰理蓝牙\杰理蓝牙开发板\BT_CLOCK

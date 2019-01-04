@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="Debug" />
+	<File name="cpu\ac690x\ui\ui_api.c" open="0" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3348" topLine="120" />
+		</Cursor>
+	</File>
+	<File name="common\rcsp\rcsp_task_msg_deal.c" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11152" topLine="520" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\bluetooth\avctp_user.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12279" topLine="293" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\board\board.c" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10626" topLine="313" />
+		</Cursor>
+	</File>
+	<File name="rtc\ds1302.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7020" topLine="301" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\dac\dac.c" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5935" topLine="266" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_api.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="826" topLine="30" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\clock.h" open="0" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="268" topLine="3" />
+		</Cursor>
+	</File>
+	<File name="rtc\keyi_rtc_setting.c" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2715" topLine="38" />
+		</Cursor>
+	</File>
+	<File name="include\rtc\keyi_rtc_app.h" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="826" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\iic\iic.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1129" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_key.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="233" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\dac\dac_api.h" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3398" topLine="64" />
+		</Cursor>
+	</File>
+	<File name="rtc\rtc_key.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1841" topLine="33" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\iis\iis.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="590" topLine="19" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_radio.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="988" topLine="28" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\common\flash_cfg.h" open="1" top="0" tabpos="29" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1516" topLine="35" />
+		</Cursor>
+	</File>
+	<File name="rtc\rtc_ui.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1115" topLine="20" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\key_drv\key.c" open="1" top="1" tabpos="30" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9980" topLine="380" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\vm\vm.h" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="969" topLine="38" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\key_drv\key.h" open="1" top="0" tabpos="31" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1388" topLine="53" />
+		</Cursor>
+	</File>
+	<File name="include\sdk_cfg.h" open="0" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1624" topLine="32" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\common\msg.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1659" topLine="77" />
+		</Cursor>
+	</File>
+	<File name="usb_device\usb_device.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="666" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\key_drv\key_drv_tch.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8317" topLine="258" />
+		</Cursor>
+	</File>
+	<File name="bluetooth\btstack\bt_key_deal.c" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="259" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\dev_manage\dev_ctl.h" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="260" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_common.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5274" topLine="170" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ladc\ladc.c" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="14441" topLine="606" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_key.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="986" topLine="21" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\clock_interface.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="222" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\sys_detect.c" open="1" top="0" tabpos="27" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1525" topLine="42" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\ui\FD612\FD612Drv.H" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1218" topLine="191" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_radio.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9751" topLine="349" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\fm_inside_api.h" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="498" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="linein\linein_key.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2317" topLine="13" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\uart\uart.c" open="1" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="623" topLine="20" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\FD612\FD612_app.c" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="19512" topLine="768" />
+		</Cursor>
+	</File>
+	<File name="common\dev_manage\dev_ctl.c" open="1" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4283" topLine="127" />
+		</Cursor>
+	</File>
+	<File name="main\main.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="26636" topLine="961" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\rf_test_uart.h" open="1" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="95" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="common\os_api\task_manage.c" open="0" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8257" topLine="330" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\typedef.h" open="0" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2475" topLine="66" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\rtc\rtc_api.h" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2846" topLine="99" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\uart_param.h" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="631" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\lcd\lcd_ui_menu.c" open="1" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1663" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\ui\ui_api.h" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4937" topLine="216" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\clock_api.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="534" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\rtos\task_manage.h" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="980" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="include\common\play_sel\play_sel.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2756" topLine="62" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\ui_common.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1266" topLine="26" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\common\app_cfg.h" open="0" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="749" topLine="2" />
+		</Cursor>
+	</File>
+	<File name="common\vm\vm_api.c" open="0" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2895" topLine="60" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\asm_type.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="794" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include\common\rcsp\rcsp_head.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6237" topLine="220" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\uart_api.h" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="227" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="rtc\keyi_rtc_app.c" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5902" topLine="165" />
+		</Cursor>
+	</File>
+	<File name="include\rtc\ds1302.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="706" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\dac\eq.c" open="1" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1126" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_inside\fm_inside.h" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="470" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\dac\dac.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="645" topLine="3" />
+		</Cursor>
+	</File>
+	<File name="rtc\rtc.c" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3047" topLine="80" />
+		</Cursor>
+	</File>
+	<File name="include\rtc\keyi_rtc_setting.h" open="0" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1001" topLine="16" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\iis\dac2iis.c" open="0" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4931" topLine="170" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_prompt.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="113" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include\fm\fm_ui.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="45" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\dac\src_api.h" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2235" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\key_drv\key_drv_ad.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5672" topLine="212" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\vm\vm_api.h" open="0" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1047" topLine="59" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\key_drv\key_drv_ad.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1462" topLine="32" />
+		</Cursor>
+	</File>
+	<File name="bluetooth\btstack\bt_configs_user.c" open="1" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="18887" topLine="629" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_api.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7579" topLine="340" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\key_drv\key_voice.c" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="399" topLine="94" />
+		</Cursor>
+	</File>
+	<File name="bluetooth\btstack\bt_key_msg.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4018" topLine="116" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_inside\fm_inside.c" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5179" topLine="154" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\periperal\peripher.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1275" topLine="46" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\sys_detect.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1364" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_prompt.c" open="0" top="0" tabpos="27" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="684" topLine="2" />
+		</Cursor>
+	</File>
+	<File name="linein\linein.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1074" topLine="29" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\timer\timer.c" open="0" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1936" topLine="68" />
+		</Cursor>
+	</File>
+	<File name="include\cpu\ac690x\ui\FD612\FD612_app.h" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="369" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="fm\fm_ui.c" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="600" topLine="6" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\hw_cpu.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="20528" topLine="436" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\FD612\FD612Drv.c" open="1" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11116" topLine="275" />
+		</Cursor>
+	</File>
+	<File name="fm\rda5807\RDA5807.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7925" topLine="360" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\iic.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="696" topLine="26" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\FD628\FD628_Drive.C" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="623" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="music\music.c" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8963" topLine="329" />
+		</Cursor>
+	</File>
+	<File name="common\play_sel\play_sel.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7240" topLine="187" />
+		</Cursor>
+	</File>
+	<File name="include\bluetooth\fcc_test.h" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="80" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\ac690x\uart.h" open="1" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="476" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\rtos\os_api.h" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="18047" topLine="482" />
+		</Cursor>
+	</File>
+	<File name="..\include_lib\cpu\adc_api.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="65" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="cpu\ac690x\ui\led\led.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1926" topLine="57" />
+		</Cursor>
+	</File>
+	<File name="include\common\includes.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="420" topLine="0" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>
